@@ -46,3 +46,17 @@ cart_items : id, cart_id(M-1), food_item_id(M-1), quantity, price, total_price, 
 
 orders : id, user_id(M-1), restaurant_id(M-1), food_item_id(M-1), quantity, price, total_price ,total_amount, payment_mode, status, address, placed_at, updated_at
 
+--- > Payment DB
+
+payment : id, order_id(1-1), user_id(M-1), amount, payment_method, payment_status, transaction_id, provider, payment_at
+
+
+
+--- > rating DB
+
+
+restaurant_review : id, user_id(M-1), restaurant_id(M-1), order_id(1-1), rating, comment, created_at, updated_at
+
+menu_item_review : id, user_id(M-1), menu_item_id(M-1), rating, comment, created_at, updated_at
+
+	
