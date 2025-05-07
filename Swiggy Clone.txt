@@ -1,0 +1,48 @@
+Swiggy Clone : 
+
+Microservices
+
+1. user service : 
+2. Restaurant Service : 
+3. cart Service :
+4. order service : 
+5. payment service : 
+6. rating service : 
+7. auth service : 
+8. Service Registry :
+9. API Gateway : 
+10. Admin Service : 
+
+
+
+--- > User DB :
+		 
+		
+user : id, name, email, phone_number, password, role_id(1-M), is_availale, created_at, updated_at
+role : id, role_name
+address : id, user_id(M-1), address_type, address, city, state, pincode, created_at, updated_at
+
+
+--- > Restaurant DB : 
+
+
+restaurant : id, owner_id(1-1), name, description, logo,restaurant_images , is_available, created_at, updated_at  
+category : id, name  
+restaurant_category: id, restaurant_id(M-1), category_id(M-1)  
+address : id, address, city, state, pincode, created_at, updated_at  
+menu_item : id, restaurant_id(M-1), name, description, price, discount, image_url, is_available, created_at, updated_at  
+
+
+
+--- > Cart DB : 
+
+
+cart : id, user_id(M-1), created_at, updated_at  
+cart_items : id, cart_id(M-1), food_item_id(M-1), quantity, price, total_price, created_at, updated_at  
+
+
+--- > Order DB : 
+
+
+orders : id, user_id(M-1), restaurant_id(M-1), food_item_id(M-1), quantity, price, total_price ,total_amount, payment_mode, status, address, placed_at, updated_at
+
