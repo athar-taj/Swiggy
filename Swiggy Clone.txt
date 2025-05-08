@@ -18,7 +18,7 @@ Microservices
 --- > User DB :
 		 
 		
-user : id, name, email, phone_number, password, role_id(1-M), is_availale, created_at, updated_at
+user : id, name, email, phone_number, password, role_id(1-M), location, is_availale, created_at, updated_at
 role : id, role_name
 address : id, user_id(M-1), address_type, address, city, state, pincode, created_at, updated_at
 
@@ -143,17 +143,13 @@ Delete menu item
 
 --- > Cart APIs
 
-List all carts
-Get cart By Id
-Create a new cart
-Delete a cart
-
---- > Cart Item APIs
-
 List all items in a cart
 Add an item to the cart
 Update item quantity or details
 Remove item from cart
+add to wishlist
+remove to wishlist
+get all wishlist item by user
 
 
 --- > Order APIs
@@ -215,3 +211,4 @@ Top Category / Cuisine
 Your current area's nearest Restaurant Suggestion API
 Recommend Newly Opened Restaurant
 
+get user location
