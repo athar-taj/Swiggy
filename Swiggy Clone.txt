@@ -26,11 +26,11 @@ address : id, user_id(M-1), address_type, address, city, state, pincode, created
 --- > Restaurant DB : 
 
 
-restaurant : id, owner_id(1-1), name, description, logo,restaurant_images , is_available, created_at, updated_at  
+restaurant : id, owner_id(M-1), name, contact_no, categorys, email , outlet, description, logo , restaurant_type , restaurant_images, open_days, start_time, end_time, is_available, created_at, updated_at  
 category : id, name  
 restaurant_category: id, restaurant_id(M-1), category_id(M-1)  
-address : id, address, city, state, pincode, created_at, updated_at  
-menu_item : id, restaurant_id(M-1), name, description, price, discount, image_url, is_available, created_at, updated_at  
+address : id,location, address, city, state, pincode, created_at, updated_at  
+menu_item : id, restaurant_id(M-1), name, description, price, discount, menu_image, is_available, created_at, updated_at  
 
 
 
@@ -56,7 +56,145 @@ payment : id, order_id(1-1), user_id(M-1), amount, payment_method, payment_statu
 
 
 restaurant_review : id, user_id(M-1), restaurant_id(M-1), order_id(1-1), rating, comment, created_at, updated_at
-
 menu_item_review : id, user_id(M-1), menu_item_id(M-1), rating, comment, created_at, updated_at
+feedback : id , user_id(M-1) , restaurant_id(M-1) , msg , image , created_at
 
-	
+
+
+
+
+                                    ----------------------- APIs ------------------------
+
+
+
+---- >  User APIs
+
+Create a new user
+Get all users
+Get user by ID
+Update user
+Delete user
+User login/authentication
+Get user availability
+
+---- >  Roles APIs
+
+Create a new role
+Get all roles
+Update role
+Delete role
+
+---- >  Address APIs
+
+Add address for a user
+Get all addresses of a user
+Get address by ID
+Update address
+Delete address
+
+
+--- > Restaurant APIs
+
+Create a new restaurant
+Get all restaurants
+Get restaurant by ID
+Update restaurant details
+Delete restaurant
+Get restaurant availability
+Update restaurant availability
+
+
+--- > category APIs
+
+Create a new category
+Get all categories
+Update category
+Delete category
+
+
+--- > Category and Restaurant APIs
+
+Get categories for a restaurant
+Remove category from restaurant
+
+
+--- > Restaurant Address APIs
+
+Create a new address
+Get address by restaurant ID
+Update address
+Delete address
+
+
+--- > Menu APIs
+
+Create a menu item
+Get all menu items for a restaurant
+Get menu item by ID
+Update menu item
+Delete menu item
+
+
+--- > Cart APIs
+
+List all carts
+Get cart By Id
+Create a new cart
+Delete a cart
+
+--- > Cart Item APIs
+
+List all items in a cart
+Add an item to the cart
+Update item quantity or details
+Remove item from cart
+
+
+--- > Order APIs
+
+List all orders
+Get details of order By id
+Create a new order
+Update an order (status, address)
+Cancel an order
+List orders for a specific user
+List orders for a restaurant
+List orders for a restaurant diffrentiate by status
+
+
+--- > Payment APIs
+
+List all payments
+Get payment By Id
+Create a new payment 
+Update payment status or details
+Get payment for a specific order
+List all payments for specific user
+
+
+--- > Restaurant Review APIs
+
+Get a specific restaurant review
+Create a new restaurant review
+Update a restaurant review
+Reviews given by a user
+
+--- > Menu Item Review APIs
+
+Get a specific menu item review
+Create a new menu item review
+Update a menu item review
+Menu item reviews by a user
+
+--- > Feedback APIs
+
+List all feedback
+Get specific feedback by User and Restaurant
+Submit feedback
+Feedback for a specific restaurant
+
+
+
+
+
+
