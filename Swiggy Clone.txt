@@ -115,7 +115,7 @@ Delete category
 --- > Category and Restaurant APIs
 
 Get categories for a restaurant
-Remove category from restaurant
+Remove category from a restaurant
 
 
 --- > Restaurant Address APIs
@@ -124,6 +124,12 @@ Create a new address
 Get address by restaurant ID
 Update address
 Delete address
+
+--- > Booking APIs
+
+add table booking
+update booking
+cancel booking
 
 
 --- > Menu APIs
@@ -196,5 +202,16 @@ Feedback for a specific restaurant
 
 
 
+Filter API for restaurant & Menu item 
+Sort By API for restaurant & Menu item
+Search API for Restaurant using keyword
+Search API for Menu Item using
 
+Menu Recommendation API
+Restaurant Recommendation API
+
+Top Category / Cuisine
+
+Your current area's nearest Restaurant Suggestion API
+Recommend Newly Opened Restaurant
 
