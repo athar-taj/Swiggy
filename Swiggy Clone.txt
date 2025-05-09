@@ -18,7 +18,7 @@ Microservices
 --- > User DB :
 		 
 		
-user : id, name, email, phone_number, password, role_id(1-M), location, is_availale, created_at, updated_at
+user : id, name, email, phone_number, password, role_id(1-M), location, is_availale , status, created_at, updated_at
 role : id, role_name
 address : id, user_id(M-1), address_type, address, city, state, pincode, created_at, updated_at
 
@@ -26,7 +26,7 @@ address : id, user_id(M-1), address_type, address, city, state, pincode, created
 --- > Restaurant DB : 
 
 
-restaurant : id, owner_id(M-1), name, contact_no, categorys, email , outlet, description, logo , restaurant_type , restaurant_images, open_days, start_time, end_time, is_available, created_at, updated_at  
+restaurant : id, owner_id(M-1), name, contact_no, categorys, email , outlet, description, logo , total_seats ,  restaurant_type , restaurant_images, open_days, start_time, end_time, is_available, created_at, updated_at
 category : id, name  
 restaurant_category: id, restaurant_id(M-1), category_id(M-1)  
 address : id,location, address, city, state, pincode, created_at, updated_at  
@@ -67,148 +67,155 @@ feedback : id , user_id(M-1) , restaurant_id(M-1) , msg , image , created_at
 
 
 
----- >  User APIs
 
-Create a new user
-Get all users
-Get user by ID
-Update user
-Delete user
-User login/authentication
-Get user availability
+User APIs:
 
----- >  Roles APIs
+POST /api/users/register - Create a new user
+POST /api/users/login - User login/authentication
+POST /api/users/forgot-password - Forgot password
 
-Create a new role
-Get all roles
-Update role
-Delete role
+GET  /api/users - Get all users
+GET  /api/users/{userId} - Get user by ID
+PUT  /api/users/{userId} - Update user
+DELETE /api/users/{userId} - Delete user
+GET  /api/users/{userId}/availability - Get user availability
 
----- >  Address APIs
+Role APIs:
 
-Add address for a user
-Get all addresses of a user
-Get address by ID
-Update address
-Delete address
+POST   /api/roles - Create a new role
+GET    /api/roles - Get all roles
+PUT    /api/roles/{roleId} - Update role
+DELETE /api/roles/{roleId} - Delete role
 
+Address APIs:
 
---- > Restaurant APIs
-
-Create a new restaurant
-Get all restaurants
-Get restaurant by ID
-Update restaurant details
-Delete restaurant
-Get restaurant availability
-Update restaurant availability
+POST   /api/users/address/{userId} - Add address for a user
+GET    /api/users/address/{userId} - Get all addresses of a user
+GET    /api/address/{addressId} - Get address by ID
+PUT    /api/address/{addressId} - Update address
+DELETE /api/address/{addressId} - Delete address
 
 
---- > category APIs
+Restaurant APIs:
 
-Create a new category
-Get all categories
-Update category
-Delete category
-
-
---- > Category and Restaurant APIs
-
-Get categories for a restaurant
-Remove category from a restaurant
-
-
---- > Restaurant Address APIs
-
-Create a new address
-Get address by restaurant ID
-Update address
-Delete address
-
---- > Booking APIs
-
-add table booking
-update booking
-cancel booking
+POST   /api/restaurants - Create a new restaurant
+GET    /api/restaurants - Get all restaurants
+GET    /api/restaurants/{restaurantId} - Get restaurant by ID
+PUT    /api/restaurants/{restaurantId} - Update restaurant details
+DELETE /api/restaurants/{restaurantId} - Delete restaurant
+GET    /api/restaurants/availability/{restaurantId} - Get restaurant availability
+PATCH  /api/restaurants/availability/{restaurantId} - Update restaurant
+POST   /api/restaurants/facility       - add restaurant facility
+PATCH   /api/restaurants/facility       - update restaurant facility
+GET   /api/restaurants/facility        - get All restaurant facility
+DELETE   /api/restaurants/facility/{name}       - remove restaurant facility
 
 
---- > Menu APIs
+Category APIs:
 
-Create a menu item
-Get all menu items for a restaurant
-Get menu item by ID
-Update menu item
-Delete menu item
-
-
---- > Cart APIs
-
-List all items in a cart
-Add an item to the cart
-Update item quantity or details
-Remove item from cart
-add to wishlist
-remove to wishlist
-get all wishlist item by user
+POST   /api/categories - Create a new category
+GET    /api/categories - Get all categories
+PUT    /api/categories/{categoryId} - Update category
+DELETE /api/categories/{categoryId} - Delete category
 
 
---- > Order APIs
+Category and Restaurant APIs:
 
-List all orders
-Get details of order By id
-Create a new order
-Update an order (status, address)
-Cancel an order
-List orders for a specific user
-List orders for a restaurant
-List orders for a restaurant diffrentiate by status
+GET    /api/restaurants/{restaurantId}/categories - Get categories for a restaurant
+DELETE /api/restaurants/{restaurantId}/categories/{categoryId} - Remove category from a restaurant
 
+Restaurant Address APIs:
 
---- > Payment APIs
-
-List all payments
-Get payment By Id
-Create a new payment 
-Update payment status or details
-Get payment for a specific order
-List all payments for specific user
+POST   /api/restaurants/address/{restaurantId} - Create a new address
+GET    /api/restaurants/address/{restaurantId} - Get address by restaurant ID
+PUT    /api/restaurants/address/{restaurantId} - Update address
+DELETE /api/restaurants/address/{restaurantId} - Delete address
 
 
---- > Restaurant Review APIs
+Booking APIs:
 
-Get a specific restaurant review
-Create a new restaurant review
-Update a restaurant review
-Reviews given by a user
+POST   /api/bookings - Add table booking
+PUT    /api/bookings/{bookingId} - Update booking
+DELETE /api/bookings/{bookingId} - Cancel booking
 
---- > Menu Item Review APIs
+Menu APIs:
 
-Get a specific menu item review
-Create a new menu item review
-Update a menu item review
-Menu item reviews by a user
-
---- > Feedback APIs
-
-List all feedback
-Get specific feedback by User and Restaurant
-Submit feedback
-Feedback for a specific restaurant
+POST   /api/restaurants/menu-items/{restaurantId} - Create a menu item
+GET    /api/restaurants/menu-items/{restaurantId} - Get all menu items for a restaurant
+GET    /api/menu-items/{menuItemId} - Get menu item by ID
+PUT    /api/menu-items/{menuItemId} - Update menu item
+DELETE /api/menu-items/{menuItemId} - Delete menu item
 
 
 
+Cart APIs:
 
-Filter API for restaurant & Menu item 
-Sort By API for restaurant & Menu item
-Search API for Restaurant using keyword
-Search API for Menu Item using
+GET    /api/carts/{userId}/items - List all items in a cart
+POST   /api/carts/{userId}/items - Add an item to the cart
+PUT    /api/carts/{userId}/items/{itemId} - Update item quantity or details
+DELETE /api/carts/{userId}/items/{itemId} - Remove item from cart
+POST   /api/wishlists/{userId}/items - Add to wishlist
+DELETE /api/wishlists/{userId}/items/{itemId} - Remove from wishlist
+GET    /api/wishlists/{userId}/items - Get all wishlist items by user
 
-Menu Recommendation API
-Restaurant Recommendation API
+Order APIs:
 
-Top Category / Cuisine
+GET    /api/orders - List all orders
+GET    /api/orders/{orderId} - Get details of order by ID
+POST   /api/orders - Create a new order
+PUT    /api/orders/{orderId} - Update an order (status, address)
+DELETE /api/orders/{orderId} - Cancel an order
+GET    /api/users/{userId}/orders - List orders for a specific user
+GET    /api/restaurants/{restaurantId}/orders - List orders for a restaurant
+GET    /api/restaurants/{restaurantId}/orders?status={status} - List orders for a restaurant filtered by status
 
-Your current area's nearest Restaurant Suggestion API
-Recommend Newly Opened Restaurant
 
-get user location
+Payment APIs:
+
+GET    /api/payments - List all payments
+GET    /api/payments/{paymentId} - Get payment by ID
+POST   /api/payments - Create a new payment
+PUT    /api/payments/{paymentId} - Update payment status or details
+GET    /api/orders/{orderId}/payment - Get payment for a specific order
+GET    /api/users/{userId}/payments - List all payments for specific user
+
+Restaurant Review APIs:
+
+GET    /api/restaurant-reviews/{reviewId} - Get a specific restaurant review
+POST   /api/restaurants/{restaurantId}/reviews - Create a new restaurant review
+PUT    /api/restaurant-reviews/{reviewId} - Update a restaurant review
+GET    /api/users/{userId}/restaurant-reviews - Reviews given by a user
+
+Menu Item Review APIs:
+
+GET    /api/menu-item-reviews/{reviewId} - Get a specific menu item review
+POST   /api/menu-items/{menuItemId}/reviews - Create a new menu item review
+PUT    /api/menu-item-reviews/{reviewId} - Update a menu item review
+GET    /api/users/{userId}/menu-item-reviews - Menu item reviews by a user
+
+Feedback APIs:
+
+GET    /api/feedback - List all feedback
+GET    /api/feedback/users/{userId}/restaurants/{restaurantId} - Get specific feedback by User and Restaurant
+POST   /api/feedback - Submit feedback
+GET    /api/restaurants/{restaurantId}/feedback - Feedback for a specific restaurant
+
+
+- Filter API for restaurant & Menu item
+- Sort By API for restaurant & Menu item
+- Search API for Restaurant using keyword
+- Search API for Menu Item using
+
+- Menu Recommendation API
+- Restaurant Recommendation API
+
+- Top Category / Cuisine
+
+- Your current area's nearest Restaurant Suggestion API
+- Recommend Newly Opened Restaurant
+
+- get user location
+
+
+
+

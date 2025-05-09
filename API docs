@@ -1,0 +1,9 @@
+-- User register API:
+
+                                                                                              | Yes -> save in DB -> return Response with Token
+- request trigger --> API Gateway & Service Registry -->  validate credential (User service) -
+                                                                                              | No -> return Error Response
+
+
+--
+
