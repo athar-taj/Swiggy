@@ -7,6 +7,7 @@ import cln.swiggy.user.model.response.CommonResponse;
 import cln.swiggy.user.model.response.UserResponse;
 import cln.swiggy.user.repository.UserRepository;
 import cln.swiggy.user.service.UserService;
+import com.aws.service.sns.service.SNSService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +22,9 @@ import java.util.Optional;
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    PasswordEncoder passwordEncoder;
+    @Autowired UserRepository userRepository;
+    @Autowired PasswordEncoder passwordEncoder;
+    @Autowired SNSService snsService;
 
     private static final int OTP_EXPIRY_MINUTES = 10;
 
@@ -50,15 +50,21 @@ public class UserServiceImpl implements UserService {
         user.setUpdatedAt(LocalDateTime.now());
         user.setAddresses(new ArrayList<>());
         user.setIsAvailable(false);
-        user.setOtp(generateOtp());
-        user.setOtpExpiry(LocalDateTime.now().plusMinutes(OTP_EXPIRY_MINUTES));
 
         UserRole role = (request.getRole() != null) ? request.getRole() : UserRole.USER;
         user.setRole(role);
 
-        userRepository.save(user);
+        int OTP = generateOtp();
+        boolean result = snsService.publishOTP(request.getEmail(), String.valueOf(OTP));
+        if (!result) {
+            return ResponseEntity.ok(new CommonResponse(500,"Something went Wrong While Sending OTP",null));
+        }
 
+        user.setOtp(OTP);
+        user.setOtpExpiry(LocalDateTime.now().plusMinutes(OTP_EXPIRY_MINUTES));
+        userRepository.save(user);
         return ResponseEntity.ok(new CommonResponse(200,"User registered successfully",convertToUserResponse(user)));
+
     }
 
     @Override
@@ -68,8 +74,17 @@ public class UserServiceImpl implements UserService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CommonResponse(404,"Not Found Phone No. : " + phoneNo,null));
         }
 
-        // sending an otp email via SNS
+        int OTP = generateOtp();
 
+        boolean result = snsService.publishOTP(user.get().getEmail(), String.valueOf(OTP));
+        if (!result) {
+            return ResponseEntity.ok(new CommonResponse(500,"Something went Wrong While Sending OTP",null));
+        }
+
+        user.get().setOtp(OTP);
+        user.get().setOtpExpiry(LocalDateTime.now().plusMinutes(OTP_EXPIRY_MINUTES));
+
+        userRepository.save(user.get());
         return ResponseEntity.ok(new CommonResponse(200,"OTP sent successfully",true));
     }
 
@@ -77,10 +92,10 @@ public class UserServiceImpl implements UserService {
     public ResponseEntity<CommonResponse> verifyOtp(String phoneNo,String otp) {
         Optional<User> user = userRepository.findByPhoneNumber(phoneNo);
         if (user.isEmpty()) {
-            ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CommonResponse(404,"Not Found Phone No. : " + phoneNo,null));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CommonResponse(404,"Not Found Phone No. : " + phoneNo,null));
         }
         if (user.get().getOtp() != Integer.parseInt(otp)) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CommonResponse(400,"Invalid OTP",null));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new CommonResponse(400,"Invalid OTP",null));
         }
         user.get().setIsAvailable(true);
         user.get().setOtp(0);

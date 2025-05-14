@@ -1,14 +1,13 @@
-package cln.swiggy.user.model;
+package cln.swiggy.restaurant.model;
 
-import cln.swiggy.user.model.enums.AddressType;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "address")
 @Data
+@Entity
+@Table(name = "addresses")
 public class Address {
 
     @Id
@@ -16,18 +15,27 @@ public class Address {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    @JsonIgnore
-    private User user;
-    @Enumerated(value = EnumType.STRING)
-    private AddressType addressType;
+    @JoinColumn(name = "restaurant_id", nullable = false)
+    private Restaurant restaurant;
+
+    private String outlet;
+
+    private Double latitude;
+
+    private Double longitude;
+
     @Column(nullable = false)
     private String address;
+
     @Column(nullable = false)
     private String city;
+
     private String state;
+
     @Column(nullable = false)
     private String pincode;
+
     private LocalDateTime createdAt;
+
     private LocalDateTime updatedAt;
 }

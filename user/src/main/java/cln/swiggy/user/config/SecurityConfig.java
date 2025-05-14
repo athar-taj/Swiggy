@@ -27,16 +27,31 @@ public class SecurityConfig {
     @Autowired
     JWTFilter jwtFilter;
 
+    private static final String[] WHITE_LIST_URLS = {
+            "/api/users/register",
+            "/api/users/login",
+            "/api/users/verify-otp",
+            "/v3/api-docs",
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/swagger-resources",
+            "/swagger-resources/**",
+            "/configuration/ui",
+            "/configuration/security",
+            "/webjars/**"
+    };
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/login","/api/users/register","/api/users/verify-otp").permitAll()
+                        .requestMatchers(WHITE_LIST_URLS).permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)          // no sessions will be created or used by spring security
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

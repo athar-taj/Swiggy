@@ -5,6 +5,9 @@ import cln.swiggy.user.model.request.UserRequest;
 import cln.swiggy.user.model.response.CommonResponse;
 import cln.swiggy.user.repository.UserRepository;
 import cln.swiggy.user.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
+@Tag(name = "User", description = "User related Authentication APIs")
 public class UserController {
 
     @Autowired
@@ -22,16 +26,19 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
+    @Operation(summary = "Register new user")
     @PostMapping("/register")
     public ResponseEntity<CommonResponse> registerUser(@Valid @RequestBody UserRequest userRequest) {
         return userService.registerUser(userRequest);
     }
 
+    @Operation(summary = "Login User")
     @PostMapping("/login")
     public ResponseEntity<CommonResponse> loginUser(@Valid @RequestParam("phoneNo") String phoneNo) {
         return userService.loginUser(phoneNo);
     }
 
+    @Operation(summary = "Verify Generated OTP")
     @PostMapping("/verify-otp")
     public ResponseEntity<CommonResponse> verifyOtp(@RequestParam String phoneNo, @RequestParam String otp) {
         try {
@@ -48,16 +55,22 @@ public class UserController {
                 .body(new CommonResponse(400, "Invalid OTP!", null));
     }
 
+    @SecurityRequirement(name = "bearer-jwt")
+    @Operation(summary = "Get All User Details")
     @GetMapping
     public ResponseEntity<CommonResponse> getAllUsers() {
         return userService.getAllUsers();
     }
 
+    @SecurityRequirement(name = "bearer-jwt")
+    @Operation(summary = "Get User by user ID")
     @GetMapping("/{userId}")
     public ResponseEntity<CommonResponse> getUserById(@PathVariable Long userId) {
         return userService.getUserById(userId);
     }
 
+    @SecurityRequirement(name = "bearer-jwt")
+    @Operation(summary = "Update user Details")
     @PutMapping("/{userId}")
     public ResponseEntity<CommonResponse> updateUser(
             @PathVariable Long userId,
@@ -65,9 +78,10 @@ public class UserController {
         return userService.updateUser(userId, userRequest);
     }
 
+    @SecurityRequirement(name = "bearer-jwt")
+    @Operation(summary = "Delete User")
     @DeleteMapping("/{userId}")
     public ResponseEntity<CommonResponse> deleteUser(@PathVariable Long userId) {
         return userService.deleteUser(userId);
     }
-
 }

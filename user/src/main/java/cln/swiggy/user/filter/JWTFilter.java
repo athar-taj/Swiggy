@@ -28,20 +28,37 @@ public class JWTFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsService userDetailsService;
 
+
+    private static final List<String> SKIP_TOKEN_PATHS = Arrays.asList(
+            "/api/users/register",
+            "/api/users/login",
+            "/api/users/verify-otp",
+            "/v3/api-docs",
+            "/v3/api-docs/",
+            "/v3/api-docs/swagger-config",
+            "/swagger-ui/",
+            "/swagger-ui/index.html",
+            "/swagger-resources",
+            "/swagger-resources/",
+            "/configuration/ui",
+            "/configuration/security",
+            "/webjars/"
+    );
+
+
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        final List<String> SKIP_TOKEN_PATHS = Arrays.asList(
-                "/api/users/register",
-                "/api/users/login",
-                "/api/users/verify-otp"
-        );
-
-
         String path = request.getServletPath();
-        if (SKIP_TOKEN_PATHS.contains(path)) {
+        boolean shouldSkip = SKIP_TOKEN_PATHS.stream()
+                .anyMatch(skipPath ->
+                        path.startsWith(skipPath) ||
+                                path.equals(skipPath.substring(0, skipPath.length() - 1)));
+
+        if (shouldSkip) {
             filterChain.doFilter(request, response);
             return;
         }

@@ -1,6 +1,7 @@
 package cln.swiggy.user.model;
 
 import cln.swiggy.user.model.enums.UserRole;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,15 +19,20 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+    @Column(nullable = false)
     private String name;
+    @Column(nullable = false)
     private String email;
+    @Column(nullable = false)
     private String phoneNumber;
+    @Column(nullable = false)
     private String password;
     private Boolean isAvailable;
     @Enumerated(value = EnumType.STRING)
     private UserRole role;
+    @Column(nullable = false)
     private Double latitude;
+    @Column(nullable = false)
     private Double longitude;
     private int otp;
     private LocalDateTime otpExpiry;
