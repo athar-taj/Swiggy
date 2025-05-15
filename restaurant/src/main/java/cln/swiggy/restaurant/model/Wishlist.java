@@ -5,16 +5,14 @@ import lombok.Data;
 
 @Data
 @Entity
-public class MenusImages {
+public class Wishlist {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private Long userId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "menu_id", nullable = false)
     private Menu menu;
-
-    @Column(nullable = false)
-    private String image;
 
 }

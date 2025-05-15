@@ -15,6 +15,10 @@ public class Category {
 
     private String name;
 
+    private String description;
+
+    private String image;
+
     @ManyToMany(mappedBy = "categories")
     private List<Restaurant> restaurants = new ArrayList<>();
 }

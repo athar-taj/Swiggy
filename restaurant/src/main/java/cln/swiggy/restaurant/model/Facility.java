@@ -2,7 +2,10 @@ package cln.swiggy.restaurant.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
 
+@Data
+@Entity
 public class Facility {
 
     @Id

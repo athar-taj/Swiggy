@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-
 @Data
 @Entity
 public class Restaurant {
@@ -42,7 +41,7 @@ public class Restaurant {
 
     private LocalTime endTime;
 
-    private Boolean isAvailable;
+    private Boolean isAvailable = true;
 
     private LocalDateTime createdAt;
 
@@ -61,5 +60,15 @@ public class Restaurant {
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private List<Facility> facilities = new ArrayList<>();
+
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
+    private List<Menu> menus = new ArrayList<>();
+
+    @OneToMany(mappedBy = "restaurantAddress",cascade = CascadeType.ALL)
+    private List<Address> addresses = new ArrayList<>();
+
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
+    private List<Booking> booking = new ArrayList<>();
+
 
 }

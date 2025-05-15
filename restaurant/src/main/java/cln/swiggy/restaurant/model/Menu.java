@@ -1,9 +1,12 @@
 package cln.swiggy.restaurant.model;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import lombok.Data;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Data
 @Entity
 public class Menu {
 
@@ -11,7 +14,7 @@ public class Menu {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
 
@@ -21,13 +24,21 @@ public class Menu {
     private String description;
 
     @Column(nullable = false)
-    private BigDecimal price;
+    private double price;
 
-    private BigDecimal discount;
+    private double discount;
 
     private Boolean isAvailable = true;
 
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "menu")
+    private List<Wishlist> wishlists;
+
+    @OneToMany(mappedBy = "cartMenu")
+    private List<Cart> carts;
+
+
 }

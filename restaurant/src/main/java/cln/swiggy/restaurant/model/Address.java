@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "addresses")
+@Table(name = "restaurant_addresses")
 public class Address {
 
     @Id
@@ -16,7 +16,7 @@ public class Address {
 
     @ManyToOne
     @JoinColumn(name = "restaurant_id", nullable = false)
-    private Restaurant restaurant;
+    private Restaurant restaurantAddress;
 
     private String outlet;
 
