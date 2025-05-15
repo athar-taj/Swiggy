@@ -130,7 +130,7 @@ POST   /api/restaurants/address/{restaurantId} - Create a new address
 GET    /api/restaurants/address/{restaurantId} - Get address by restaurant ID
 PUT    /api/restaurants/address/{restaurantId} - Update address
 DELETE /api/restaurants/address/{restaurantId} - Delete address
-
+GET   /api/restaurants/addess/outlets/{restaurantId} - get all Restaurant Outlets
 
 Booking APIs:
 
