@@ -217,3 +217,4 @@ get user location
 notification while menu order place to restaurant.
 Price in Order.
 add category list in menu
+add rating feild in menu and restaurant
