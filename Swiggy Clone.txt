@@ -216,3 +216,4 @@ GET    /api/restaurants/{restaurantId}/feedback - Feedback for a specific restau
 get user location
 notification while menu order place to restaurant.
 Price in Order.
+add category list in menu
