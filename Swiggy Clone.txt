@@ -10,8 +10,7 @@ Microservices
 6. rating service : 
 7. auth service : 
 8. Service Registry :
-9. API Gateway : 
-10. Admin Service : 
+9. API Gateway :  
 
 
 
@@ -216,3 +215,4 @@ GET    /api/restaurants/{restaurantId}/feedback - Feedback for a specific restau
 
 get user location
 notification while menu order place to restaurant.
+Price in Order.
