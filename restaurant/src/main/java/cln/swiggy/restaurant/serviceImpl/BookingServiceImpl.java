@@ -9,6 +9,7 @@ import cln.swiggy.restaurant.model.response.CommonResponse;
 import cln.swiggy.restaurant.repository.BookingRepository;
 import cln.swiggy.restaurant.repository.RestaurantRepository;
 import cln.swiggy.restaurant.service.BookingService;
+import com.aws.service.sns.service.SNSService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,7 +35,8 @@ public class BookingServiceImpl implements BookingService {
     private RestaurantRepository restaurantRepository;
     @Autowired
     private RabbitTemplate rabbitTemplate;
-
+    @Autowired
+    private SNSService snsService;
 
     @Override
     public ResponseEntity<CommonResponse> bookTable(BookingRequest request) {
@@ -47,7 +49,6 @@ public class BookingServiceImpl implements BookingService {
         if (Boolean.FALSE.equals(isOwnerExists))
             throw new ResourceNotFoundException("Owner not found with id: " + request.getUserId());
         booking.setUserId(request.getUserId());
-
 
         booking.setRestaurant(restaurant);
         booking.setNumberOfPeople(request.getNumberOfPeople());
@@ -70,6 +71,21 @@ public class BookingServiceImpl implements BookingService {
 
         return ResponseEntity.ok(new CommonResponse(HttpStatus.OK.value(),
                 "Booking details retrieved successfully", booking));
+    }
+
+    @Override
+    public ResponseEntity<CommonResponse> confirmBooking(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+        booking.setBookingStatus(BookingStatus.CONFIRMED);
+        bookingRepository.save(booking);
+
+        String userEmail = (String) rabbitTemplate.convertSendAndReceive(exchange, "user_email_id_key", booking.getUserId());
+
+//        snsService.publishOTP(userEmail,"Your Booking is Done !!" + booking);
+
+        return ResponseEntity.ok(new CommonResponse(HttpStatus.OK.value(),
+                "Booking confirmed successfully", booking));
     }
 
     @Override

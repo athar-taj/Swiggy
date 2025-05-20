@@ -1,5 +1,6 @@
 package cln.swiggy.restaurant.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -18,6 +19,10 @@ public class Menu {
     @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
 
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
     @Column(nullable = false)
     private String name;
 
@@ -34,11 +39,16 @@ public class Menu {
 
     private LocalDateTime updatedAt;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "menu")
     private List<Wishlist> wishlists;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "cartMenu")
     private List<Cart> carts;
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "menu")
+    private List<MenuImage> images;
 
 }

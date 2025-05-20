@@ -11,18 +11,16 @@ import java.util.List;
 @Data
 public class MenuResponse {
 
-    @Autowired
-     static MenuImagesRepository menuImagesRepository;
-
         private Long id;
         private String name;
         private String description;
-        private int price;
-        private int discount;
+        private double price;
+        private double discount;
         private Boolean isAvailable;
         private List<String> images;
 
-        public static MenuResponse convertToResponse(Menu menu) {
+        public static MenuResponse convertToResponse(Menu menu,MenuImagesRepository menuImagesRepository) {
+
             MenuResponse response = new MenuResponse();
             response.setName(menu.getName());
             response.setDescription(menu.getDescription());
@@ -30,7 +28,7 @@ public class MenuResponse {
             response.setDiscount(menu.getDiscount());
             response.setIsAvailable(menu.getIsAvailable());
 
-            List<MenuImage> menusImages = menuImagesRepository.findByMenuId(menu.getId());
+            List<MenuImage> menusImages = menuImagesRepository.findByMenu(menu);
 
             response.setImages(menusImages.stream().map(MenuImage::getImage).toList());
             return response;

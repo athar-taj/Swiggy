@@ -1,8 +1,6 @@
 package cln.swiggy.restaurant.model.request;
 
-import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,8 +14,12 @@ public class CategoryRequest {
     @Size(max = 500, message = "Description must not exceed 500 characters")
     private String description;
 
-    @NotBlank(message = "Image is required")
+    @NotNull(message = "Category image is required")
     private MultipartFile image;
+
+    @NotNull(message = "Restaurant id is required")
+    @Min(value = 1, message = "Restaurant id must be greater than 0")
+    private Long restaurantId;
 
     @AssertTrue(message = "Invalid image format. Allowed formats are: JPG, JPEG, PNG")
     private boolean isValidImageFormat() {

@@ -4,12 +4,13 @@ import cln.swiggy.restaurant.model.request.CartRequest;
 import cln.swiggy.restaurant.model.response.CommonResponse;
 import cln.swiggy.restaurant.service.CartService;
 import jakarta.validation.Valid;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/carts")
+@RequestMapping("/api/cart")
 public class CartController {
 
     @Autowired
@@ -24,7 +25,7 @@ public class CartController {
     @PostMapping("/{userId}/items")
     public ResponseEntity<CommonResponse> addItemToCart(
             @PathVariable  Long userId,
-            @Valid @RequestBody CartRequest request) {
+            @Valid @RequestBody CartRequest request) throws BadRequestException {
         return cartService.addItemToCart(userId, request);
     }
 
@@ -32,7 +33,7 @@ public class CartController {
     public ResponseEntity<CommonResponse> updateCartItem(
             @PathVariable Long userId,
             @PathVariable Long itemId,
-            @Valid @RequestBody CartRequest request) {
+            @Valid @RequestBody CartRequest request) throws BadRequestException {
         return cartService.updateCartItem(userId, itemId, request);
     }
 

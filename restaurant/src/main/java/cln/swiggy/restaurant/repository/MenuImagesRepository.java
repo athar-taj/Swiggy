@@ -10,5 +10,5 @@ import java.util.List;
 @Repository
 public interface MenuImagesRepository extends JpaRepository<MenuImage, Long> {
 
-    List<MenuImage> findByMenuId(Long menuItemId);
+    List<MenuImage> findByMenu(Menu menu);
 }

@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/bookings")
+@RequestMapping("/api/restaurant/bookings")
 public class BookingController {
 
     @Autowired
@@ -31,6 +31,11 @@ public class BookingController {
     public ResponseEntity<CommonResponse> getRestaurantBookings(
             @PathVariable @NotNull Long restaurantId) {
         return bookingService.getAllBookingsForRestaurant(restaurantId);
+    }
+
+    @PostMapping("/{bookingId}/confirm")
+    public ResponseEntity<CommonResponse> confirmBooking(@PathVariable @NotNull Long bookingId) {
+        return bookingService.confirmBooking(bookingId);
     }
 
     @GetMapping("/user/{userId}")

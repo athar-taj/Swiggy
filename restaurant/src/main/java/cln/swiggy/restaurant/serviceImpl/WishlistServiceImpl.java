@@ -11,6 +11,7 @@ import cln.swiggy.restaurant.repository.WishlistRepository;
 import cln.swiggy.restaurant.service.WishlistService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,12 @@ import java.util.stream.Collectors;
 @Service
 public class WishlistServiceImpl implements WishlistService {
 
+    @Value("${rabbitmq.exchange}")
+    private String exchange;
+
+    @Value("${rabbitmq.routing-key}")
+    private String routingKey;
+
     @Autowired
     private WishlistRepository wishlistRepository;
 
@@ -30,8 +37,6 @@ public class WishlistServiceImpl implements WishlistService {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    private final String exchange = "user-exchange";
-    private final String routingKey = "user-routing-key";
 
     @Override
     public ResponseEntity<CommonResponse> addToWishlist(Long userId, WishlistRequest request) {

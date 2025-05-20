@@ -1,0 +1,17 @@
+rabbitmq:
+  user:
+    queue: is_user_exists_for_order
+    exchange: user_exchange
+    routing-key: user_order_key
+  menu:
+    queue: is_menu_exists_for_order
+    exchange: menu_exchange
+    routing-key: menu_order_key
+  restaurant:
+    queue: is_restaurant_exists_for_order
+    exchange: restaurant_exchange
+    routing-key: restaurant_order_key
+  payment:
+    queue: is_order_exists_for_payment
+    exchange: payment_exchange
+    routing-key: payment_order_key

@@ -29,12 +29,18 @@ public class RestaurantResponse {
 
 
 
-
-
     public static RestaurantResponse convertToResponse(Restaurant restaurant) {
         RestaurantResponse response = new RestaurantResponse();
         response.setName(restaurant.getName());
         response.setDescription(restaurant.getDescription());
+        response.setLogo(restaurant.getLogo());
+        response.setOutlet(restaurant.getOutlet());
+        response.setContactNo(restaurant.getContactNo());
+        response.setEmail(restaurant.getEmail());
+        response.setRestaurantType(restaurant.getRestaurantType());
+        response.setOpenDays(restaurant.getOpenDays());
+        response.setStartTime(restaurant.getStartTime());
+        response.setEndTime(restaurant.getEndTime());
         response.setIsAvailable(restaurant.getIsAvailable());
 
         Set<CategoryResponse> categoryResponses = restaurant.getCategories().stream()

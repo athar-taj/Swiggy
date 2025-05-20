@@ -19,7 +19,7 @@ public class RestaurantRequest {
     private String name;
 
     @NotBlank(message = "Contact number is required")
-    @Pattern(regexp = "^\\+?[1-9][0-9]{10}$", message = "Invalid contact number")
+    @Pattern(regexp = "^\\d{10}$", message = "Invalid contact number")
     private String contactNo;
 
     @NotBlank(message = "Email is required")
@@ -48,7 +48,7 @@ public class RestaurantRequest {
     @NotNull(message = "End time is required")
     private LocalTime endTime;
 
-    @NotNull(message = "Logo is required")
+
     private MultipartFile logo;
 
     @Size(max = 5, message = "Minimum 5 restaurant images are required")

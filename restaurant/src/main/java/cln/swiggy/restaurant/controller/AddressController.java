@@ -9,38 +9,33 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/address")
+@RequestMapping("/api/restaurants")
 public class AddressController {
 
     @Autowired
     private AddressService addressService;
 
-    @PostMapping("/restaurants/{restaurantId}/address")
+    @PostMapping("/{restaurantId}/address")
     public ResponseEntity<CommonResponse> createAddress(
             @PathVariable Long restaurantId,
             @Valid @RequestBody AddressRequest request) {
         return addressService.createAddress(restaurantId, request);
     }
 
-    @GetMapping("/restaurants/{restaurantId}/address")
+    @GetMapping("/{restaurantId}/address")
     public ResponseEntity<CommonResponse> getAddress(@PathVariable Long restaurantId) {
         return addressService.getAddress(restaurantId);
     }
 
-    @PutMapping("/restaurants/{restaurantId}/address")
+    @PutMapping("/{restaurantId}/address")
     public ResponseEntity<CommonResponse> updateAddress(
             @PathVariable Long restaurantId,
             @Valid @RequestBody AddressRequest request) {
         return addressService.updateAddress(restaurantId, request);
     }
 
-    @DeleteMapping("/restaurants/{restaurantId}/address")
+    @DeleteMapping("/{restaurantId}/address")
     public ResponseEntity<CommonResponse> deleteAddress(@PathVariable Long restaurantId) {
         return addressService.deleteAddress(restaurantId);
-    }
-
-    @GetMapping("/restaurants/{restaurantId}/outlets")
-    public ResponseEntity<CommonResponse> getRestaurantOutlets(@PathVariable Long restaurantId) {
-        return addressService.getRestaurantOutlets(restaurantId);
     }
 }

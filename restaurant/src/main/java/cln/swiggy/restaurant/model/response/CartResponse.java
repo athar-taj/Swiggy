@@ -18,7 +18,6 @@ public class CartResponse {
     public static CartResponse convertToCartResponse(Cart cart) {
         CartResponse response = new CartResponse();
 
-        response.setUserId(cart.getUserId());
         response.setMenuName(cart.getCartMenu().getName());
         response.setMenuPrice(cart.getPrice());
         response.setQuantity(cart.getQuantity());

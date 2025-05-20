@@ -12,12 +12,15 @@ import cln.swiggy.restaurant.repository.RestaurantImagesRepository;
 import cln.swiggy.restaurant.repository.RestaurantRepository;
 import cln.swiggy.restaurant.service.RestaurantService;
 import cln.swiggy.restaurant.serviceImpl.otherImple.ImageUtils;
+import com.aws.service.s3bucket.service.StorageService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,13 +39,19 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Autowired  ImageUtils imageUtils;
     @Autowired  RabbitTemplate rabbitTemplate;
     @Autowired  RestaurantImagesRepository restaurantImagesRepository;
+    @Autowired  StorageService storageService;
 
     @Override
     public ResponseEntity<CommonResponse> createRestaurant(RestaurantRequest request) throws ResourceNotFoundException{
+
+            if (restaurantRepository.existsByNameAndOutlet(request.getName(), request.getOutlet())) {
+                return ResponseEntity.badRequest()
+                        .body(new CommonResponse(400, "Restaurant with same name and outlet already exists", null));
+            }
+
             Restaurant restaurant = new Restaurant();
 
-            // owner id
-            Boolean isOwnerExists = (Boolean) rabbitTemplate.convertSendAndReceive(exchange,routingKey, request.getOwnerId());
+            Boolean isOwnerExists = (Boolean) rabbitTemplate.convertSendAndReceive(exchange, routingKey, request.getOwnerId());
 
             if (Boolean.FALSE.equals(isOwnerExists)) throw new ResourceNotFoundException("Owner not found with id: " + request.getOwnerId());
             restaurant.setOwnerId(request.getOwnerId());
@@ -62,8 +71,8 @@ public class RestaurantServiceImpl implements RestaurantService {
 
 
             if (request.getLogo() != null) {
-                String logoPath = imageUtils.saveImage(request.getLogo(), "restaurant-logos");
-                restaurant.setLogo(logoPath);
+//                restaurant.setLogo(storageService.uploadFile(request.getLogo()));
+                restaurant.setLogo("logo.file");
             }
 
             restaurant.getCategories().addAll(categoryRepository.findAllById(request.getCategoryIds()));
@@ -71,15 +80,14 @@ public class RestaurantServiceImpl implements RestaurantService {
             Restaurant savedRestaurant = restaurantRepository.save(restaurant);
 
             if (request.getImages() != null && !request.getImages().isEmpty()) {
-                List<String> imagePaths = imageUtils.saveImages(request.getImages(), "restaurant-images");
-                imagePaths.forEach(path -> {
-                    RestaurantImages image = new RestaurantImages();
-                    image.setImage(path);
-                    image.setRestaurant(savedRestaurant);
-                    savedRestaurant.getImages().add(image);
-                });
+                for (MultipartFile file : request.getImages()) {
+//                    String key = storageService.uploadFile(file);
+                    RestaurantImages restaurantImages = new RestaurantImages();
+                    restaurantImages.setImage("Image.pic");
+                    restaurantImages.setRestaurant(savedRestaurant);
+                    restaurantImagesRepository.save(restaurantImages);
+                }
             }
-
 
             return ResponseEntity.ok(new CommonResponse(201, "Restaurant created successfully",
                     RestaurantResponse.convertToResponse(restaurantRepository.save(savedRestaurant))));
@@ -108,9 +116,11 @@ public class RestaurantServiceImpl implements RestaurantService {
             return ResponseEntity.ok(new CommonResponse(200, "Restaurant retrieved successfully",
                     RestaurantResponse.convertToResponse(restaurant)));
     }
+
     @Override
     public ResponseEntity<CommonResponse> updateRestaurant(Long restaurantId, RestaurantRequest request) throws ResourceNotFoundException {
-            Restaurant restaurant = findRestaurantById(restaurantId);
+            Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + restaurantId));
 
             restaurant.setName(request.getName());
             restaurant.setEmail(request.getEmail());
@@ -149,15 +159,11 @@ public class RestaurantServiceImpl implements RestaurantService {
                     RestaurantResponse.convertToResponse(restaurantRepository.save(restaurant))));
     }
 
-    private Restaurant findRestaurantById(Long restaurantId) {
-        return restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + restaurantId));
-    }
-
     @Override
     public ResponseEntity<CommonResponse> deleteRestaurant(Long restaurantId) throws ResourceNotFoundException{
 
-            Restaurant restaurant = findRestaurantById(restaurantId);
+            Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + restaurantId));
 
             if (restaurant.getLogo() != null) {
                 imageUtils.deleteImage(restaurant.getLogo(), "restaurant-logos");
@@ -228,6 +234,16 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .map(Category::getName)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(new CommonResponse(200, "Categories retrieved successfully", categories));
+    }
+
+    @Override
+    public ResponseEntity<CommonResponse> getRestaurantMenus(Long restaurantId) throws ResourceNotFoundException {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + restaurantId));
+        List<String> menus = restaurant.getMenus().stream()
+                .map(menu -> menu.getName() + " - " + menu.getPrice())
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(new CommonResponse(200, "Menus retrieved successfully", menus));
     }
 
 }

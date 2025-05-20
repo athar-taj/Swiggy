@@ -23,7 +23,6 @@ public class SwaggerConfig {
         devServer.setUrl("http://localhost:2001");
         devServer.setDescription("Development server");
 
-        // Define security scheme
         SecurityScheme securityScheme = new SecurityScheme()
                 .type(SecurityScheme.Type.HTTP)
                 .scheme("bearer")
@@ -31,7 +30,6 @@ public class SwaggerConfig {
                 .in(SecurityScheme.In.HEADER)
                 .name("Authorization");
 
-        // Define security requirement
         SecurityRequirement securityRequirement = new SecurityRequirement().addList("bearer-jwt");
 
         return new OpenAPI()

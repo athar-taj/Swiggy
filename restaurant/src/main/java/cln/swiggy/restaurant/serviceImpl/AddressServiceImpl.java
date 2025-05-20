@@ -31,7 +31,10 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public ResponseEntity<CommonResponse> getAddress(Long restaurantId) throws ResourceNotFoundException {
-        List<Address> address = addressRepository.findByRestaurantId(restaurantId);
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + restaurantId));
+
+        List<Address> address = addressRepository.findByRestaurant(restaurant);
 
         if (address.isEmpty()) {
             throw new ResourceNotFoundException("Address not found for restaurant id: " + restaurantId);
@@ -46,16 +49,12 @@ public class AddressServiceImpl implements AddressService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + restaurantId));
 
-        if (addressRepository.existsByRestaurantId(restaurantId)) {
+        if (addressRepository.existsByRestaurant(restaurant)) {
             throw new DuplicateResourceFoundException("Address already exists for restaurant id: " + restaurantId);
         }
 
-        if(addressRepository.existsByOutlet(request.getOutlet())){
-            throw new DuplicateResourceFoundException("Address already exists for outlet: " + request.getOutlet());
-        }
-
         Address address = new Address();
-        address.setRestaurantAddress(restaurant);
+        address.setRestaurant(restaurant);
         address.setOutlet(request.getOutlet());
         address.setLatitude(request.getLatitude());
         address.setLongitude(request.getLongitude());
@@ -98,7 +97,7 @@ public class AddressServiceImpl implements AddressService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + restaurantId));
 
-        List<Address> address = addressRepository.findByRestaurantId(restaurantId);
+        List<Address> address = addressRepository.findByRestaurant(restaurant);
         if (address.isEmpty()) {
             throw new ResourceNotFoundException("Address not found for restaurant id: " + restaurantId);
         }
@@ -117,7 +116,7 @@ public class AddressServiceImpl implements AddressService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + restaurantId));
 
-        List<Address> outlets = addressRepository.findAllByRestaurantId(restaurantId);
+        List<Address> outlets = addressRepository.findAllByRestaurant(restaurant);
 
         return ResponseEntity.ok(new CommonResponse(
                 HttpStatus.OK.value(),

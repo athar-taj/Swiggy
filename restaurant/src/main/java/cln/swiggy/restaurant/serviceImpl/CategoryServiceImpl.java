@@ -2,10 +2,13 @@ package cln.swiggy.restaurant.serviceImpl;
 
 import cln.swiggy.restaurant.exception.ResourceNotFoundException;
 import cln.swiggy.restaurant.model.Category;
+import cln.swiggy.restaurant.model.Restaurant;
 import cln.swiggy.restaurant.model.request.CategoryRequest;
 import cln.swiggy.restaurant.model.response.CommonResponse;
 import cln.swiggy.restaurant.repository.CategoryRepository;
+import cln.swiggy.restaurant.repository.RestaurantRepository;
 import cln.swiggy.restaurant.service.CategoryService;
+import com.aws.service.s3bucket.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,27 +26,35 @@ import java.util.UUID;
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
+    @Autowired
+    RestaurantRepository restaurantRepository;
     @Autowired CategoryRepository categoryRepository;
 
     @Value("${swiggy.category.image.path}")
     private String categoryImagePath;
+    @Autowired
+    StorageService storageService;
 
     @Override
     public ResponseEntity<CommonResponse> createCategory(CategoryRequest request) throws IOException {
-            Category category = new Category();
-            category.setName(request.getName());
-            category.setDescription(request.getDescription());
+        Restaurant restaurant = restaurantRepository.findById(request.getRestaurantId())
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + request.getRestaurantId()));
 
-            if (request.getImage() != null && !request.getImage().isEmpty()) {
-                String fileName = saveImage(request.getImage());
-                category.setImage(fileName);
-            }
+        Category category = new Category();
+        category.setName(request.getName());
+        category.setDescription(request.getDescription());
+        category.getRestaurants().add(restaurant);
 
-            Category savedCategory = categoryRepository.save(category);
+        category.setImage("demo.file");
+//        category.setImage(storageService.uploadFile(request.getImage()));
 
-            return ResponseEntity.ok(new CommonResponse(HttpStatus.CREATED.value(),"Category created successfully", savedCategory));
+        restaurant.getCategories().add(category);
+
+        Category savedCategory = categoryRepository.save(category);
+        restaurantRepository.save(restaurant);
+
+        return ResponseEntity.ok(new CommonResponse(HttpStatus.CREATED.value(), "Category created successfully", savedCategory));
     }
-
     @Override
     public ResponseEntity<CommonResponse> getAllCategories() {
         List<Category> categories = categoryRepository.findAll();
