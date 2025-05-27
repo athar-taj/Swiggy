@@ -16,7 +16,7 @@ public class Address {
 
     @ManyToOne
     @JoinColumn(name = "restaurant_id", nullable = false)
-    private Restaurant restaurantAddress;
+    private Restaurant restaurant;
 
     private String outlet;
 

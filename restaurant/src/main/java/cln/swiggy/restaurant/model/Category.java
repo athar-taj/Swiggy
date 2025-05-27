@@ -1,5 +1,6 @@
 package cln.swiggy.restaurant.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -19,6 +20,11 @@ public class Category {
 
     private String image;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "categories")
     private List<Restaurant> restaurants = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "category")
+    private List<Menu> menus = new ArrayList<>();
 }

@@ -2,6 +2,7 @@ package cln.swiggy.restaurant.model;
 
 import cln.swiggy.restaurant.model.enums.RestaurantType;
 import cln.swiggy.restaurant.serviceImpl.otherImple.StringListConverter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -9,6 +10,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+
+
 @Data
 @Entity
 public class Restaurant {
@@ -41,12 +44,21 @@ public class Restaurant {
 
     private LocalTime endTime;
 
+    private LocalTime avgDeliveryTime;
+
+    private Double costForTwo;
+
+    private int totalRating;
+
+    private Double rating;
+
     private Boolean isAvailable = true;
 
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
 
+    @JsonIgnore
     @ManyToMany
     @JoinTable(
             name = "restaurant_category",
@@ -55,20 +67,31 @@ public class Restaurant {
     )
     private List<Category> categories = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private List<RestaurantImages> images = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private List<Facility> facilities = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private List<Menu> menus = new ArrayList<>();
 
-    @OneToMany(mappedBy = "restaurantAddress",cascade = CascadeType.ALL)
+    @JsonIgnore
+    @OneToMany(mappedBy = "restaurant",cascade = CascadeType.ALL)
     private List<Address> addresses = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private List<Booking> booking = new ArrayList<>();
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "restaurant",cascade = CascadeType.ALL)
+    private List<RestaurantMenuImage> restaurantMenuImages = new ArrayList<>();
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "restaurant",cascade = CascadeType.ALL)
+    private List<Offer> offers = new ArrayList<>();
 }

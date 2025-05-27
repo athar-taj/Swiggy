@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 public interface BookingService {
     public ResponseEntity<CommonResponse> bookTable(BookingRequest request);
     public ResponseEntity<CommonResponse> getBookingDetails(Long bookingId);
+    public ResponseEntity<CommonResponse> confirmBooking(Long bookingId);
     public ResponseEntity<CommonResponse> getAllBookingsForRestaurant(Long restaurantId);
     public ResponseEntity<CommonResponse> getAllBookingsForUser(Long userId);
     public ResponseEntity<CommonResponse> updateBooking(Long bookingId,BookingRequest request);

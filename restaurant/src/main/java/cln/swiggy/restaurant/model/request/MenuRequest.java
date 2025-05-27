@@ -13,6 +13,10 @@ public class MenuRequest {
     @Min(value = 1, message = "Restaurant id must be greater than 0")
     private Long restaurantId;
 
+    @NotNull(message = "Category id is required")
+    @Min(value = 1, message = "Category id must be greater than 0")
+    private Long categoryId;
+
     @NotBlank(message = "Menu item name is required")
     @Size(min = 2, max = 100, message = "Menu item name must be between 2 and 100 characters")
     private String name;

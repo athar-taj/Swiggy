@@ -143,6 +143,19 @@ public class UserServiceImpl implements UserService {
         return ResponseEntity.ok(new CommonResponse(200,"User deleted successfully",null));
     }
 
+    @Override
+    public ResponseEntity<CommonResponse> updateLocation(Long userId, Double latitude, Double longitude) {
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CommonResponse(404,"User not found with id: " + userId,null));
+        }
+        user.get().setLatitude(latitude);
+        user.get().setLongitude(longitude);
+        user.get().setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user.get());
+        return ResponseEntity.ok(new CommonResponse(200,"Location updated successfully",convertToUserResponse(user.get())));
+    }
+
     private int generateOtp() {
         return (int) (Math.random() * 900000) + 100000;
     }
