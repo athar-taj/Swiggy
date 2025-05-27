@@ -84,4 +84,9 @@ public class UserController {
     public ResponseEntity<CommonResponse> deleteUser(@PathVariable Long userId) {
         return userService.deleteUser(userId);
     }
+
+    @GetMapping("/location")
+    public ResponseEntity<CommonResponse> updateLocation(@RequestParam Long userId,@RequestParam Double latitude,@RequestParam Double longitude) {
+        return userService.updateLocation(userId, latitude, longitude);
+    }
 }

@@ -146,5 +146,4 @@ public class RabbitMQConfig {
         admin.setAutoStartup(true);
         return admin;
     }
-
 }

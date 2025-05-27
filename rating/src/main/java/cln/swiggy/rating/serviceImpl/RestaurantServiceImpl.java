@@ -6,6 +6,7 @@ import cln.swiggy.rating.model.request.RatingRequest;
 import cln.swiggy.rating.model.response.CommonResponse;
 import cln.swiggy.rating.repository.RestaurantRatingRepository;
 import cln.swiggy.rating.service.RestaurantService;
+import jakarta.transaction.Transactional;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,8 +38,9 @@ public class RestaurantServiceImpl implements RestaurantService {
             ));
     }
 
+
     @Override
-    public ResponseEntity<CommonResponse> createRating(Long restaurantId, RatingRequest request)
+    public ResponseEntity<CommonResponse> createRating(RatingRequest request)
     {
         Boolean isUserExists = (Boolean) rabbitTemplate.convertSendAndReceive("user_exchange","user_restaurant_key", request.getUserId());
 
@@ -57,29 +60,38 @@ public class RestaurantServiceImpl implements RestaurantService {
 
 
         Optional<RestaurantRating> existingRating = ratingRepository
-                    .findByUserIdAndRestaurantId(request.getUserId(), restaurantId);
+                    .findByUserIdAndRestaurantId(request.getUserId(), request.getElementId());
 
             if (existingRating.isPresent()) {
                 CommonResponse response = new CommonResponse(
-                        HttpStatus.CONFLICT.value(),"User has already rated this restaurant", existingRating.get());
+                        HttpStatus.CONFLICT.value(),"User has already rated this restaurant",null);
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
             }
 
             RestaurantRating rating = new RestaurantRating();
-            rating.setRestaurantId(restaurantId);
+            rating.setRestaurantId(request.getElementId());
             rating.setUserId(request.getUserId());
             rating.setRating(request.getRating());
             rating.setComment(request.getComment());
             rating.setCreatedAt(LocalDateTime.now());
 
-            RestaurantRating savedRating = ratingRepository.save(rating);
 
-            CommonResponse response = new CommonResponse(
-                    HttpStatus.CREATED.value(),
-                    "Rating created successfully",
-                    savedRating
-            );
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            HashMap<String, Object> responseMap = new HashMap<>();
+            responseMap.put("rating", request.getRating());
+            responseMap.put("restaurantId", request.getElementId());
+
+            Boolean result = (Boolean) rabbitTemplate.convertSendAndReceive("restaurant_exchange", "restaurant_rating_key", responseMap);
+
+            if(Boolean.TRUE.equals(result)) {
+                RestaurantRating savedRating = ratingRepository.save(rating);
+                return ResponseEntity.status(HttpStatus.CREATED).body(new CommonResponse(
+                        HttpStatus.CREATED.value(), "Rating created successfully", savedRating));
+            }
+            else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new CommonResponse(
+                        500,"Something Went Wrong While Restaurant Rating",null));
+
+            }
     }
 
     @Override

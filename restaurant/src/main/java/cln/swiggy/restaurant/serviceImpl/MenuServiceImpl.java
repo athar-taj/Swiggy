@@ -1,6 +1,8 @@
 package cln.swiggy.restaurant.serviceImpl;
 
 import cln.swiggy.restaurant.exception.ResourceNotFoundException;
+import cln.swiggy.restaurant.filter.Implementation.MenuFilter;
+import cln.swiggy.restaurant.filter.request.MenuFilterRequest;
 import cln.swiggy.restaurant.model.Category;
 import cln.swiggy.restaurant.model.Menu;
 import cln.swiggy.restaurant.model.MenuImage;
@@ -8,13 +10,17 @@ import cln.swiggy.restaurant.model.Restaurant;
 import cln.swiggy.restaurant.model.request.MenuRequest;
 import cln.swiggy.restaurant.model.response.CommonResponse;
 import cln.swiggy.restaurant.model.response.MenuResponse;
+import cln.swiggy.restaurant.model.response.RestaurantResponse;
 import cln.swiggy.restaurant.repository.CategoryRepository;
 import cln.swiggy.restaurant.repository.MenuImagesRepository;
 import cln.swiggy.restaurant.repository.MenuRepository;
 import cln.swiggy.restaurant.repository.RestaurantRepository;
+import cln.swiggy.restaurant.search.model.ElasticObject;
+import cln.swiggy.restaurant.search.repository.ElasticRepository;
 import cln.swiggy.restaurant.service.MenuService;
 import cln.swiggy.restaurant.serviceImpl.otherImple.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,6 +38,7 @@ public class MenuServiceImpl implements MenuService {
     @Autowired  MenuImagesRepository menuImageRepository;
     @Autowired  CategoryRepository categoryRepository;
     @Autowired  ImageUtils imageUtils;
+    @Autowired  ElasticRepository elasticRepository;
 
     @Override
     public ResponseEntity<CommonResponse> createMenuItem(Long restaurantId, MenuRequest request) throws ResourceNotFoundException {
@@ -47,7 +54,7 @@ public class MenuServiceImpl implements MenuService {
             }
 
 
-        Menu menu = new Menu();
+            Menu menu = new Menu();
             menu.setRestaurant(restaurant);
             menu.setCategory(category);
             menu.setName(request.getName());
@@ -69,7 +76,14 @@ public class MenuServiceImpl implements MenuService {
                 menuImageRepository.save(image);
             }
         }
-            return ResponseEntity.ok(new CommonResponse(201, "Menu item created successfully",true));
+
+        ElasticObject elasticObject = new ElasticObject();
+        elasticObject.setElementId(savedMenu.getId());
+        elasticObject.setLabel("Dish");
+        elasticObject.setMenu(MenuResponse.convertToResponse(savedMenu,menuImageRepository));
+        elasticRepository.save(elasticObject);
+
+        return ResponseEntity.ok(new CommonResponse(201, "Menu item created successfully",true));
     }
 
     @Override
@@ -147,5 +161,25 @@ public class MenuServiceImpl implements MenuService {
 
             menuRepository.delete(menu);
             return ResponseEntity.ok(new CommonResponse(200, "Menu item deleted successfully", null));
+    }
+
+    @Override
+    public ResponseEntity<CommonResponse> filterMenu(MenuFilterRequest request) {
+        Specification<Menu> specification = MenuFilter.withFilters(request);
+
+        List<Menu> filteredRestaurant = menuRepository.findAll(specification);
+        return ResponseEntity.ok(new CommonResponse(200,"Filter Menus Fetched Successfully",MenuResponse.convertToResponse(filteredRestaurant,menuImageRepository)));
+    }
+
+    @Override
+    public ResponseEntity<CommonResponse> searchMenuItems(String keyword) {
+        List<Menu> menus = menuRepository.searchMenuByKeyword(keyword);
+        if (menus.isEmpty()) {
+            return ResponseEntity.ok(new CommonResponse(200, "No menu items found", new ArrayList<>()));
+        }
+        List<MenuResponse> responses = menus.stream()
+                .map(menu -> MenuResponse.convertToResponse(menu, menuImageRepository))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(new CommonResponse(200, "Menu items retrieved successfully", responses));
     }
 }

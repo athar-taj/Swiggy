@@ -20,4 +20,5 @@ public interface UserService {
 
     ResponseEntity<CommonResponse> deleteUser(Long userId);
 
+    ResponseEntity<CommonResponse> updateLocation(Long userId, Double latitude, Double longitude);
 }

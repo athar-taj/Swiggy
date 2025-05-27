@@ -24,6 +24,16 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.user.routing-key}")
     private String userRoutingKey;
 
+    @Value("${rabbitmq.category.queue}")
+    private String categoryQueue;
+
+    @Value("${rabbitmq.category.exchange}")
+    private String categoryExchange;
+
+    @Value("${rabbitmq.category.routing-key}")
+    private String categoryRoutingKey;
+
+
     @Value("${rabbitmq.menu.queue}")
     private String menuQueue;
 
@@ -50,6 +60,16 @@ public class RabbitMQConfig {
 
     @Value("${rabbitmq.payment.routing-key}")
     private String paymentRoutingKey;
+
+
+    @Value("${rabbitmq.menuOrder.queue}")
+    private String menuOrderQueue;
+
+    @Value("${rabbitmq.menuOrder.exchange}")
+    private String menuOrderExchange;
+
+    @Value("${rabbitmq.menuOrder.routing-key}")
+    private String menuOrderRoutingKey;
 
 
     @Bean
@@ -90,6 +110,27 @@ public class RabbitMQConfig {
                 .with(userRoutingKey);
     }
 
+
+
+    @Bean
+    public DirectExchange categoryExchange() {
+        return new DirectExchange(categoryExchange);
+    }
+
+    @Bean
+    public Queue categoryQueue() {
+        return new Queue(categoryQueue);
+    }
+
+    @Bean
+    public Binding categoryBinding() {
+        return BindingBuilder
+                .bind(categoryQueue())
+                .to(categoryExchange())
+                .with(categoryRoutingKey);
+    }
+
+
     @Bean
     public DirectExchange restaurantExchange() {
         return new DirectExchange(restaurantExchange);
@@ -107,8 +148,6 @@ public class RabbitMQConfig {
                 .to(restaurantExchange())
                 .with(restaurantRoutingKey);
     }
-
-
 
     @Bean
     public DirectExchange paymentExchange() {
@@ -128,6 +167,24 @@ public class RabbitMQConfig {
                 .with(paymentRoutingKey);
     }
 
+
+    @Bean
+    public DirectExchange menuOrderExchange() {
+        return new DirectExchange(menuOrderExchange);
+    }
+
+    @Bean
+    public Queue menuOrderQueue() {
+        return new Queue(menuOrderQueue , true);
+    }
+
+    @Bean
+    public Binding menuOrderBinding() {
+        return BindingBuilder
+                .bind(menuOrderQueue())
+                .to(menuOrderExchange())
+                .with(menuOrderRoutingKey);
+    }
 
 
     @Bean(name = "orderJsonMessageConverter")

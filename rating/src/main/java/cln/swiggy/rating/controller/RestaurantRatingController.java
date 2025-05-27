@@ -56,7 +56,8 @@ public class RestaurantRatingController {
             @PathVariable Long restaurantId,
             @Parameter(description = "Rating details", required = true)
             @Valid @RequestBody RatingRequest request) {
-        return restaurantService.createRating(restaurantId, request);
+        request.setElementId(restaurantId);
+        return restaurantService.createRating(request);
     }
 
     @Operation(summary = "Update rating",

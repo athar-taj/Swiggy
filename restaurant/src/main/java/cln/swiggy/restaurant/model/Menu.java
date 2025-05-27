@@ -1,13 +1,18 @@
 package cln.swiggy.restaurant.model;
 
+import cln.swiggy.restaurant.model.enums.MenuType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Entity
 public class Menu {
 
@@ -15,6 +20,7 @@ public class Menu {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
@@ -32,6 +38,15 @@ public class Menu {
     private double price;
 
     private double discount;
+
+    private int TotalRating;
+
+    private double rating;
+
+    private int totalOrders;
+
+    @Enumerated(EnumType.STRING)
+    private MenuType menuType;
 
     private Boolean isAvailable = true;
 

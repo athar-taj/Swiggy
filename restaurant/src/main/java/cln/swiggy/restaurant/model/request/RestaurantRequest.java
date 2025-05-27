@@ -48,6 +48,11 @@ public class RestaurantRequest {
     @NotNull(message = "End time is required")
     private LocalTime endTime;
 
+    @NotNull(message = "Average Delivery Time is Required")
+    private LocalTime avgDeliveryTime;
+
+    @Min(value = 0 , message = "Cost can't be Negative")
+    private Double costForTwo;
 
     private MultipartFile logo;
 

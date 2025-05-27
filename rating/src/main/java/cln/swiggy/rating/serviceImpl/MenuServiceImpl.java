@@ -2,6 +2,7 @@ package cln.swiggy.rating.serviceImpl;
 
 import cln.swiggy.rating.exception.ResourceNotFoundException;
 import cln.swiggy.rating.model.MenuRating;
+import cln.swiggy.rating.model.RestaurantRating;
 import cln.swiggy.rating.model.request.RatingRequest;
 import cln.swiggy.rating.model.response.CommonResponse;
 import cln.swiggy.rating.repository.MenuRatingRepository;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,7 +39,7 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public ResponseEntity<CommonResponse> createRating(RatingRequest request) {
 
-        Boolean isUserElement = (Boolean) rabbitTemplate.convertSendAndReceive("user_exchange","rating_user_key", request.getUserId());
+        Boolean isUserElement = (Boolean) rabbitTemplate.convertSendAndReceive("user_exchange","menu_rating_key", request.getUserId());
 
         if (Boolean.FALSE.equals(isUserElement)) {
             CommonResponse response = new CommonResponse(
@@ -64,13 +66,23 @@ public class MenuServiceImpl implements MenuService {
         rating.setComment(request.getComment());
         rating.setCreatedAt(LocalDateTime.now());
 
-        MenuRating savedRating = ratingRepository.save(rating);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(new CommonResponse(
-                HttpStatus.CREATED.value(),
-                "Rating created successfully",
-                savedRating
-        ));
+        HashMap<String, Object> responseMap = new HashMap<>();
+        responseMap.put("rating", request.getRating());
+        responseMap.put("menuId", request.getElementId());
+
+        Boolean result = (Boolean) rabbitTemplate.convertSendAndReceive("menu_exchange", "menu_rating_key", responseMap);
+
+        if(Boolean.TRUE.equals(result)) {
+            MenuRating savedRating = ratingRepository.save(rating);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new CommonResponse(
+                    HttpStatus.CREATED.value(), "Rating created successfully", savedRating));
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new CommonResponse(
+                    500,"Something Went Wrong While Menu Rating",null));
+
+        }
     }
 
     @Override

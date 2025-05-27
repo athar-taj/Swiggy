@@ -45,12 +45,12 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    public ResponseEntity<CommonResponse> createAddress(Long restaurantId, AddressRequest request) throws ResourceNotFoundException{
-        Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + restaurantId));
+    public ResponseEntity<CommonResponse> createAddress(AddressRequest request) throws ResourceNotFoundException{
+        Restaurant restaurant = restaurantRepository.findById(request.getRestaurantId())
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + request.getRestaurantId()));
 
         if (addressRepository.existsByRestaurant(restaurant)) {
-            throw new DuplicateResourceFoundException("Address already exists for restaurant id: " + restaurantId);
+            throw new DuplicateResourceFoundException("Address already exists for restaurant id: " + request.getRestaurantId());
         }
 
         Address address = new Address();

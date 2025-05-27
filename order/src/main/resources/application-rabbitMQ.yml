@@ -3,6 +3,10 @@ rabbitmq:
     queue: is_user_exists_for_order
     exchange: user_exchange
     routing-key: user_order_key
+  category:
+    queue: category_of_menus_for_order
+    exchange: order_exchange
+    routing-key: category_order_key
   menu:
     queue: is_menu_exists_for_order
     exchange: menu_exchange
@@ -15,3 +19,7 @@ rabbitmq:
     queue: is_order_exists_for_payment
     exchange: payment_exchange
     routing-key: payment_order_key
+  menuOrder:
+    queue: update_menu_order_count
+    exchange: order_exchange
+    routing-key: update_order_key

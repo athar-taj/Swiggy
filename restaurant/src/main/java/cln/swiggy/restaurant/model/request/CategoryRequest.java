@@ -17,9 +17,9 @@ public class CategoryRequest {
     @NotNull(message = "Category image is required")
     private MultipartFile image;
 
-    @NotNull(message = "Restaurant id is required")
-    @Min(value = 1, message = "Restaurant id must be greater than 0")
-    private Long restaurantId;
+//    @NotNull(message = "Restaurant id is required")
+//    @Min(value = 1, message = "Restaurant id must be greater than 0")
+//    private Long restaurantId;
 
     @AssertTrue(message = "Invalid image format. Allowed formats are: JPG, JPEG, PNG")
     private boolean isValidImageFormat() {

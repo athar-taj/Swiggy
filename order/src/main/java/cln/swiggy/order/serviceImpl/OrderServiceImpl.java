@@ -2,12 +2,14 @@ package cln.swiggy.order.serviceImpl;
 
 import cln.swiggy.order.exception.ResourceNotFoundException;
 import cln.swiggy.order.model.Order;
+import cln.swiggy.order.model.OrdersCategory;
 import cln.swiggy.order.model.enums.DeliveryStatus;
 import cln.swiggy.order.model.enums.OrderStatus;
 import cln.swiggy.order.model.request.OrderRequest;
 import cln.swiggy.order.model.response.CommonResponse;
 import cln.swiggy.order.model.response.OrderResponse;
 import cln.swiggy.order.repository.OrderRepository;
+import cln.swiggy.order.repository.OrdersCategoryRepository;
 import cln.swiggy.order.service.OrderService;
 import cln.swiggy.order.serviceImpl.otherImpl.EntityValidator;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -19,13 +21,17 @@ import org.springframework.stereotype.Service;
 
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+
 
 @Service
 public class OrderServiceImpl implements OrderService {
 
     @Autowired
     OrderRepository orderRepository;
+    @Autowired
+    OrdersCategoryRepository ordersCategoryRepository;
     @Autowired
     OrderResponse orderResponse;
     @Autowired
@@ -38,8 +44,10 @@ public class OrderServiceImpl implements OrderService {
             entityValidator.validateUserExists(request.getUserId());
             entityValidator.validateRestaurantExists(request.getRestaurantId());
 
-            Double price = (Double) rabbitTemplate.convertSendAndReceive("menu_exchange","price_order_key",request.getMenuId());
-            if (price == null) {
+            HashMap<String,Object> data = (HashMap<String, Object>) rabbitTemplate.convertSendAndReceive("menu_exchange","price_order_key",request.getMenuId());
+
+
+            if (data == null) {
                 return ResponseEntity.badRequest().body(new CommonResponse(HttpStatus.BAD_REQUEST.value(),
                         "Menu not found with id: " + request.getMenuId(), null));
             }
@@ -55,15 +63,27 @@ public class OrderServiceImpl implements OrderService {
             order.setDeliveryLandmark(request.getDeliveryLandmark());
             order.setReceiverName(request.getReceiverName());
             order.setReceiverPhoneNumber(request.getReceiverPhoneNumber());
-            order.setPrice(price);
+            order.setPrice((Double) data.get("Price"));
             order.setQuantity(request.getQuantity());
-            order.setTotal_price(price * request.getQuantity());
+            order.setTotal_price((Double) data.get("Price") * request.getQuantity());
             order.setDeliveryStatus(DeliveryStatus.PENDING);
             order.setCreatedAt(LocalDateTime.now());
             order.setUpdatedAt(LocalDateTime.now());
 
             Order savedOrder = orderRepository.save(order);
 
+            if(ordersCategoryRepository.existsByName((String) data.get("Category"))){
+               OrdersCategory orders =  ordersCategoryRepository.findByName((String) data.get("Category"));
+                orders.setTotalOrders(orders.getTotalOrders() + 1);
+            }
+            else {
+                OrdersCategory orders = new OrdersCategory();
+                orders.setName((String) data.get("Category"));
+                orders.setTotalOrders(1);
+                ordersCategoryRepository.save(orders);
+            }
+        Boolean result = (Boolean) rabbitTemplate.convertSendAndReceive("order_exchange", "update_order_key", savedOrder.getMenuId().toString());
+        System.out.println(result);
             return ResponseEntity.ok( new CommonResponse(HttpStatus.OK.value(), "Order created successfully", savedOrder));
     }
 

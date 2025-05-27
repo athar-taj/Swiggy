@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+
+
 @Data
 @Entity
 public class Restaurant {
@@ -41,6 +43,14 @@ public class Restaurant {
     private LocalTime startTime;
 
     private LocalTime endTime;
+
+    private LocalTime avgDeliveryTime;
+
+    private Double costForTwo;
+
+    private int totalRating;
+
+    private Double rating;
 
     private Boolean isAvailable = true;
 
@@ -77,5 +87,11 @@ public class Restaurant {
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private List<Booking> booking = new ArrayList<>();
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "restaurant",cascade = CascadeType.ALL)
+    private List<RestaurantMenuImage> restaurantMenuImages = new ArrayList<>();
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "restaurant",cascade = CascadeType.ALL)
+    private List<Offer> offers = new ArrayList<>();
 }
