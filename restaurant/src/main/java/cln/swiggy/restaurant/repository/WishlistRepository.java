@@ -15,10 +15,6 @@ import java.util.Optional;
 @Repository
 public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
 
-    boolean existsByUserIdAndMenuId(Long userId, @NotNull(message = "Menu ID is required") @Positive(message = "Menu ID must be greater than 0") Long menuId);
-
-    Optional<Wishlist> findByUserIdAndMenuId(Long userId, Long itemId);
-
     List<Wishlist> findByUserId(Long userId);
 
     Optional<Wishlist> findByIdAndUserId(Long itemId, Long userId);

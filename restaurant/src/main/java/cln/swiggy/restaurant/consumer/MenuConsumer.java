@@ -7,6 +7,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -28,9 +29,13 @@ public class MenuConsumer {
         HashMap<String,Object> menu = new HashMap<>();
         Optional<Menu> menus = menuRepository.findById(menuId);
 
+        LocalTime avgDeliveryTime = menus.get().getRestaurant().getAvgDeliveryTime();
+        int avgTimeInMinutes = avgDeliveryTime.getHour() * 60 + avgDeliveryTime.getMinute();
+
+        menu.put("AvgTime",String.valueOf(avgTimeInMinutes));
         menu.put("Price",menus.map(Menu::getPrice).orElse(null));
         menu.put("Category",menus.get().getCategory().getName());
-
+        System.out.println(menu);
         return menu;
     }
 

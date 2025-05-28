@@ -43,12 +43,10 @@ public class MenuController {
             @ApiResponse(responseCode = "404", description = "Restaurant not found"),
             @ApiResponse(responseCode = "415", description = "Unsupported media type")
     })
-    @PostMapping(value = "/restaurant/{restaurantId}",
+    @PostMapping(value = "/restaurant",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse> createMenuItem(
-            @Parameter(description = "ID of the restaurant", required = true)
-            @PathVariable Long restaurantId,
             @Parameter(description = "Menu item images (optional)")
             @RequestPart(value = "image", required = false) List<MultipartFile> image,
             @Parameter(description = "Menu item details in JSON format", required = true)
@@ -58,7 +56,7 @@ public class MenuController {
         MenuRequest request = mapper.readValue(menuDataJson, MenuRequest.class);
         request.setImages(image);
         validationUtil.validateRequest(request);
-        return menuService.createMenuItem(restaurantId, request);
+        return menuService.createMenuItem(request);
     }
 
     @Operation(summary = "Get menu item",

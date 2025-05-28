@@ -94,17 +94,17 @@ public class OfferServiceImpl implements OfferService {
         if (offerType != null) {
             if (activeOnly) {
                 offers = offerRepository
-                        .findByRestaurantIdAndIsActiveTrueAndOfferType(restaurantId, offerType);
+                        .findByRestaurantIdAndIsActiveTrueAndOfferTypeAndEndDateAfter(restaurantId, offerType,LocalDateTime.now());
             } else {
                 offers = offerRepository
-                        .findByRestaurantIdAndOfferType(restaurantId, offerType);
+                        .findByRestaurantIdAndOfferTypeAndEndDateAfter(restaurantId, offerType,LocalDateTime.now());
             }
         } else {
             if (activeOnly) {
                 offers = offerRepository
-                        .findByRestaurantIdAndIsActiveTrue(restaurantId);
+                        .findByRestaurantIdAndIsActiveTrueAndEndDateAfter(restaurantId,LocalDateTime.now());
             } else {
-                offers = offerRepository.findByRestaurantId(restaurantId);
+                offers = offerRepository.findByRestaurantIdAndEndDateAfter(restaurantId,LocalDateTime.now());
             }
         }
         return ResponseEntity.ok(new CommonResponse(200, "Offers retrieved successfully", OfferResponse.convertToResponse(offers)));

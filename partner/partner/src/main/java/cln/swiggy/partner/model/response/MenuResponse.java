@@ -5,13 +5,18 @@ import cln.swiggy.partner.model.MenuImage;
 import cln.swiggy.partner.model.enums.MenuType;
 import cln.swiggy.partner.repository.MenuImagesRepository;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@Component
 public class MenuResponse {
+
+        @Autowired MenuImagesRepository menuImagesRepository;
 
         private Long id;
         private String name;
@@ -25,7 +30,7 @@ public class MenuResponse {
         private LocalTime FastDeliveryTime;
         private MenuType menuType;
 
-        public static MenuResponse convertToResponse(Menu menu,MenuImagesRepository menuImagesRepository) {
+        public MenuResponse convertToResponse(Menu menu) {
 
             MenuResponse response = new MenuResponse();
             response.setName(menu.getName());
@@ -44,10 +49,10 @@ public class MenuResponse {
             return response;
         }
 
-        public static List<MenuResponse> convertToResponse(List<Menu> menus,MenuImagesRepository menuImagesRepository){
+        public List<MenuResponse> convertToResponse(List<Menu> menus){
             ArrayList<MenuResponse> response = new ArrayList<>();
             for (Menu menu : menus){
-                response.add(convertToResponse(menu,menuImagesRepository));
+                response.add(convertToResponse(menu));
             }
             return response;
         }

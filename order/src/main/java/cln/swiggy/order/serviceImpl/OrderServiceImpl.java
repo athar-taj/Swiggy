@@ -3,11 +3,13 @@ package cln.swiggy.order.serviceImpl;
 import cln.swiggy.order.exception.ResourceNotFoundException;
 import cln.swiggy.order.model.Order;
 import cln.swiggy.order.model.OrdersCategory;
+import cln.swiggy.order.model.TrackingCheckpoint;
 import cln.swiggy.order.model.enums.DeliveryStatus;
 import cln.swiggy.order.model.enums.OrderStatus;
 import cln.swiggy.order.model.request.OrderRequest;
 import cln.swiggy.order.model.response.CommonResponse;
 import cln.swiggy.order.model.response.OrderResponse;
+import cln.swiggy.order.model.response.OrderTrackingResponse;
 import cln.swiggy.order.repository.OrderRepository;
 import cln.swiggy.order.repository.OrdersCategoryRepository;
 import cln.swiggy.order.service.OrderService;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -41,50 +44,53 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public ResponseEntity<CommonResponse> createOrder(OrderRequest request) {
-            entityValidator.validateUserExists(request.getUserId());
-            entityValidator.validateRestaurantExists(request.getRestaurantId());
+                entityValidator.validateUserExists(request.getUserId());
+                entityValidator.validateRestaurantExists(request.getRestaurantId());
 
-            HashMap<String,Object> data = (HashMap<String, Object>) rabbitTemplate.convertSendAndReceive("menu_exchange","price_order_key",request.getMenuId());
+                HashMap<String,Object> data = (HashMap<String, Object>) rabbitTemplate.convertSendAndReceive("menu_exchange","price_order_key",request.getMenuId());
+                if (data == null) {
+                    return ResponseEntity.badRequest().body(new CommonResponse(HttpStatus.BAD_REQUEST.value(),
+                            "Menu not found with id: " + request.getMenuId(), null));
+                }
 
+                Order order = new Order();
+                order.setUserId(request.getUserId());
+                order.setMenuId(request.getMenuId());
+                order.setRestaurantId(request.getRestaurantId());
+                order.setOrderStatus(OrderStatus.PENDING);
+                order.setDeliveryAddress(request.getDeliveryAddress());
+                order.setDeliveryCity(request.getDeliveryCity());
+                order.setPincode(request.getDeliveryPincode());
+                order.setDeliveryLandmark(request.getDeliveryLandmark());
+                order.setReceiverName(request.getReceiverName());
+                order.setReceiverPhoneNumber(request.getReceiverPhoneNumber());
+                order.setPrice((Double) data.get("Price"));
+                order.setQuantity(request.getQuantity());
+                order.setTotal_price((Double) data.get("Price") * request.getQuantity());
+                order.setDeliveryStatus(DeliveryStatus.PENDING);
+                order.setCurrentLatitude(request.getCurrentLatitude());
+                order.setCurrentLongitude(request.getCurrentLongitude());
+                order.setEstimatedDeliveryTime(data.get("AvgTime") + " mins");
+                order.setDeliveryPartnerName(request.getDeliveryPartnerName());
+                order.setDeliveryPartnerPhone(request.getDeliveryPartnerPhone());
+                order.setCreatedAt(LocalDateTime.now());
+                order.setUpdatedAt(LocalDateTime.now());
 
-            if (data == null) {
-                return ResponseEntity.badRequest().body(new CommonResponse(HttpStatus.BAD_REQUEST.value(),
-                        "Menu not found with id: " + request.getMenuId(), null));
-            }
+                Order savedOrder = orderRepository.save(order);
 
-            Order order = new Order();
-            order.setUserId(request.getUserId());
-            order.setMenuId(request.getMenuId());
-            order.setRestaurantId(request.getRestaurantId());
-            order.setOrderStatus(OrderStatus.PENDING);
-            order.setDeliveryAddress(request.getDeliveryAddress());
-            order.setDeliveryCity(request.getDeliveryCity());
-            order.setPincode(request.getDeliveryPincode());
-            order.setDeliveryLandmark(request.getDeliveryLandmark());
-            order.setReceiverName(request.getReceiverName());
-            order.setReceiverPhoneNumber(request.getReceiverPhoneNumber());
-            order.setPrice((Double) data.get("Price"));
-            order.setQuantity(request.getQuantity());
-            order.setTotal_price((Double) data.get("Price") * request.getQuantity());
-            order.setDeliveryStatus(DeliveryStatus.PENDING);
-            order.setCreatedAt(LocalDateTime.now());
-            order.setUpdatedAt(LocalDateTime.now());
-
-            Order savedOrder = orderRepository.save(order);
-
-            if(ordersCategoryRepository.existsByName((String) data.get("Category"))){
-               OrdersCategory orders =  ordersCategoryRepository.findByName((String) data.get("Category"));
-                orders.setTotalOrders(orders.getTotalOrders() + 1);
-            }
-            else {
-                OrdersCategory orders = new OrdersCategory();
-                orders.setName((String) data.get("Category"));
-                orders.setTotalOrders(1);
-                ordersCategoryRepository.save(orders);
-            }
-        Boolean result = (Boolean) rabbitTemplate.convertSendAndReceive("order_exchange", "update_order_key", savedOrder.getMenuId().toString());
-        System.out.println(result);
-            return ResponseEntity.ok( new CommonResponse(HttpStatus.OK.value(), "Order created successfully", savedOrder));
+                if(ordersCategoryRepository.existsByName((String) data.get("Category"))){
+                   OrdersCategory orders =  ordersCategoryRepository.findByName((String) data.get("Category"));
+                    orders.setTotalOrders(orders.getTotalOrders() + 1);
+                }
+                else {
+                    OrdersCategory orders = new OrdersCategory();
+                    orders.setName((String) data.get("Category"));
+                    orders.setTotalOrders(1);
+                    ordersCategoryRepository.save(orders);
+                }
+            Boolean result = (Boolean) rabbitTemplate.convertSendAndReceive("order_exchange", "update_order_key", savedOrder.getMenuId().toString());
+            System.out.println(result);
+                return ResponseEntity.ok( new CommonResponse(HttpStatus.OK.value(), "Order created successfully", savedOrder));
     }
 
     @Override
@@ -213,4 +219,58 @@ public class OrderServiceImpl implements OrderService {
                 httpStatus,message, null));
 
     }
+
+    @Override
+    public ResponseEntity<CommonResponse> trackOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
+
+        if (order.getDeliveryStatus() == DeliveryStatus.CANCELLED) {
+            return ResponseEntity.badRequest().body(new CommonResponse(HttpStatus.BAD_REQUEST.value(),
+                    "Order has been cancelled", null));
+        }
+
+        OrderTrackingResponse trackingResponse = new OrderTrackingResponse();
+        trackingResponse.setOrderId(order.getId());
+        trackingResponse.setOrderStatus(order.getOrderStatus());
+        trackingResponse.setDeliveryStatus(order.getDeliveryStatus());
+        trackingResponse.setCurrentLatitude(order.getCurrentLatitude());
+        trackingResponse.setCurrentLongitude(order.getCurrentLongitude());
+        trackingResponse.setEstimatedDeliveryTime(order.getEstimatedDeliveryTime());
+        trackingResponse.setDeliveryPartnerName(order.getDeliveryPartnerName());
+        trackingResponse.setDeliveryPartnerPhone(order.getDeliveryPartnerPhone());
+        trackingResponse.setLastUpdated(order.getUpdatedAt());
+
+        trackingResponse.setCheckpoints(List.of(
+                new TrackingCheckpoint("Order Placed", order.getCreatedAt(), "Your order has been placed"),
+                new TrackingCheckpoint("Preparing", order.getCreatedAt().plusMinutes(5), "Restaurant started preparing"),
+                new TrackingCheckpoint("Out for Delivery", order.getCreatedAt().plusMinutes(20), "Delivery partner picked up")
+        ));
+
+        return ResponseEntity.ok(new CommonResponse(HttpStatus.OK.value(), "Order tracking info", trackingResponse));
+    }
+
+    @Override
+    public ResponseEntity<CommonResponse> getOrderHistory(Long userId) {
+        entityValidator.validateUserExists(userId);
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+        List<Order> userOrders = orderRepository.findByUserId(userId, sort);
+        if (userOrders.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CommonResponse(
+                    HttpStatus.NOT_FOUND.value(),"No orders found for user", null));
+        }
+
+        return ResponseEntity.ok(new CommonResponse(200, "Order history retrieved successfully", userOrders.stream().map(orderResponse::convertToOrderResponse).toList()));
+    }
+
+    public ResponseEntity<CommonResponse> updateOrderLocation(Long orderId, Double latitude, Double longitude) {
+        Order existingOrder = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
+        existingOrder.setCurrentLatitude(latitude);
+        existingOrder.setCurrentLongitude(longitude);
+        Order updatedOrder = orderRepository.save(existingOrder);
+        return ResponseEntity.ok(new CommonResponse(HttpStatus.OK.value(),"Order location updated successfully",
+                orderResponse.convertToOrderResponse(updatedOrder)));
+    }
+
 }

@@ -14,4 +14,8 @@ public interface OrderService {
     ResponseEntity<CommonResponse> getUsersOrders(Long userId);
     ResponseEntity<CommonResponse> getRestaurantOrders(Long restaurantId);
     ResponseEntity<CommonResponse> getRestaurantOrdersByStatus(Long restaurantId, OrderStatus status);
+    ResponseEntity<CommonResponse> trackOrder(Long orderId);
+    ResponseEntity<CommonResponse> getOrderHistory(Long orderId);
+    ResponseEntity<CommonResponse> updateOrderLocation(Long orderId, Double latitude, Double longitude);
+
 }

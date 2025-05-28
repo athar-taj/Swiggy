@@ -15,4 +15,6 @@ public interface RestaurantService {
     ResponseEntity<CommonResponse> getRestaurantOutlets(String restaurantName) throws ResourceNotFoundException;
     ResponseEntity<CommonResponse> getRestaurantCategories(Long restaurantId) throws ResourceNotFoundException;
     ResponseEntity<CommonResponse> getRestaurantMenus(Long restaurantId) throws ResourceNotFoundException;
+    ResponseEntity<CommonResponse> deActivateRestaurant(Long restaurantId);
+    ResponseEntity<CommonResponse> activateRestaurant(Long restaurantId);
 }

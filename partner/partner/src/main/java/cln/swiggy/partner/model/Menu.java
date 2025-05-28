@@ -37,6 +37,8 @@ public class Menu {
 
     private double discount;
 
+    private double minimumOrderValue;
+
     private int TotalRating;
 
     private double rating;
@@ -51,10 +53,6 @@ public class Menu {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "menu")
-    private List<Wishlist> wishlists;
 
     @JsonIgnore
     @OneToMany(mappedBy = "menu")

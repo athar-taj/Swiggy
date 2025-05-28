@@ -17,8 +17,6 @@ import java.util.List;
 public interface MenuRepository extends JpaRepository<Menu, Long> {
     List<Menu> findAll(@Nullable Specification<Menu> spec);
 
-    List<Menu> findByRestaurantId(Long restaurantId);
-
     boolean existsByNameAndRestaurantAndPrice(String name, Restaurant restaurant,int price);
 
     @Query(value = """
@@ -42,4 +40,6 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
     List<Long> getMenuIdUserOrders(Long userId);
 
     List<Menu> findByCategoryId(Long category);
+
+    List<Menu> findByRestaurantId(Long restaurantId);
 }

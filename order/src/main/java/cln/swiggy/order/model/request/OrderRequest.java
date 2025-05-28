@@ -40,4 +40,26 @@ public class OrderRequest {
     @Min(value = 1, message = "Quantity must be at least 1")
     private Integer quantity;
 
+    @NotBlank(message = "Delivery partner name cannot be blank")
+    @Size(max = 100, message = "Delivery partner name must not exceed 100 characters")
+    private String deliveryPartnerName;
+
+    @NotBlank(message = "Delivery partner phone cannot be blank")
+    @Pattern(regexp = "^\\d{10}$", message = "Delivery partner phone is not valid")
+    private String deliveryPartnerPhone;
+
+    @DecimalMin(value = "-90.0", message = "Latitude must be greater than or equal to -90")
+    @DecimalMax(value = "90.0", message = "Latitude must be less than or equal to 90")
+    @NotNull(message = "Latitude must not be null")
+    private double currentLatitude;
+
+    @DecimalMin(value = "-180.0", message = "Longitude must be greater than or equal to -180")
+    @DecimalMax(value = "180.0", message = "Longitude must be less than or equal to 180")
+    @NotNull(message = "Longitude must not be null")
+    private double currentLongitude;
+
+    @NotBlank(message = "Estimated delivery time cannot be blank")
+    @Pattern(regexp = "^\\d{2}:\\d{2}$", message = "Estimated delivery time must be in HH:mm format")
+    private String estimatedDeliveryTime;
+
 }
