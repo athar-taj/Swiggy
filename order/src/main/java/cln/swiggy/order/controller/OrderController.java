@@ -120,4 +120,40 @@ public class OrderController {
             @RequestParam("Status") OrderStatus status) {
         return orderService.getRestaurantOrdersByStatus(restaurantId, status);
     }
+
+    @Operation(
+            summary = "Track an order", description = "Get the tracking details of an order by its ID")
+    @GetMapping("/track/{orderId}")
+    public ResponseEntity<CommonResponse> trackOrder(
+            @Parameter(description = "The ID of the order to track", example = "123")
+            @PathVariable Long orderId) {
+        return orderService.trackOrder(orderId);
+    }
+
+    @Operation(summary = "Get order history", description = "Retrieve the history of an order by its ID")
+    @GetMapping("/history/{orderId}")
+    public ResponseEntity<CommonResponse> getOrderHistory(
+            @Parameter(description = "The ID of the order whose history is to be retrieved", example = "123")
+            @PathVariable Long orderId) {
+        return orderService.getOrderHistory(orderId);
+    }
+
+    @Operation(
+            summary = "Update order location",
+            description = "Update the current location of an order by providing order ID, latitude, and longitude"
+    )
+    @PutMapping("/{orderId}/location")
+    public ResponseEntity<CommonResponse> updateOrderLocation(
+            @Parameter(description = "The ID of the order to update")
+            @PathVariable Long orderId,
+
+            @Parameter(description = "Current latitude of the order", example = "58.971598")
+            @RequestParam Double latitude,
+
+            @Parameter(description = "Current longitude of the order", example = "72.594566")
+            @RequestParam Double longitude
+    ) {
+        return orderService.updateOrderLocation(orderId, latitude, longitude);
+    }
+
 }

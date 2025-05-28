@@ -36,11 +36,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Autowired  ImageUtils imageUtils;
     @Autowired  RabbitTemplate rabbitTemplate;
     @Autowired  RestaurantImagesRepository restaurantImagesRepository;
-    @Autowired  StorageService storageService;
-    @Autowired  AddressRepository addressRepository;
     @Autowired  ElasticRepository elasticRepository;
-    @Autowired  OfferRepository offerRepository;
-
     @Override
     public ResponseEntity<CommonResponse> createRestaurant(RestaurantRequest request) throws ResourceNotFoundException{
 
@@ -241,5 +237,19 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .map(menu -> menu.getName() + " - " + menu.getPrice())
                 .collect(Collectors.toList());
         return ResponseEntity.ok(new CommonResponse(200, "Menus retrieved successfully", menus));
+    }
+
+    @Override
+    public ResponseEntity<CommonResponse> activateRestaurant(Long restaurantId){
+        Optional<Restaurant> restaurants = restaurantRepository.findById(restaurantId);
+        restaurants.ifPresent(restaurant -> {restaurant.setIsAvailable(true); restaurant.setUpdatedAt(LocalDateTime.now()); restaurantRepository.save(restaurant);});
+        return ResponseEntity.ok(new CommonResponse(200, "Restaurant availability activated successfully", null));
+    }
+
+    @Override
+    public ResponseEntity<CommonResponse> deActivateRestaurant(Long restaurantId){
+        Optional<Restaurant> restaurants = restaurantRepository.findById(restaurantId);
+        restaurants.ifPresent(restaurant -> {restaurant.setIsAvailable(false); restaurant.setUpdatedAt(LocalDateTime.now()); restaurantRepository.save(restaurant);});
+        return ResponseEntity.ok(new CommonResponse(200, "Restaurant Deactivated successfully", null));
     }
 }

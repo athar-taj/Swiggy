@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "orders")  // Changed from 'order' to 'orders'
+@Table(name = "orders")
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,6 +37,11 @@ public class Order {
     private double total_price;
     @Enumerated(EnumType.STRING)
     private DeliveryStatus deliveryStatus;
+    private String deliveryPartnerName;
+    private String deliveryPartnerPhone;
+    private double currentLatitude;
+    private double currentLongitude;
+    private String estimatedDeliveryTime;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

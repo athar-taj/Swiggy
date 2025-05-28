@@ -1,5 +1,6 @@
 package cln.swiggy.partner.model.request;
 
+import cln.swiggy.partner.model.enums.MenuType;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +32,14 @@ public class MenuRequest {
     @DecimalMin(value = "0", message = "Discount cannot be negative")
     @DecimalMax(value = "100", message = "Discount cannot more then 100%")
     private int discount  = 0;
+
+    @NotNull(message = "Menu Type is required")
+    private MenuType menuType;
+
+
+
+    @DecimalMin(value = "0", message = "Minimum order value cannot be negative")
+    private double minimumOrderValue;
 
     @NotNull(message = "Menu images are required")
     @Size(max = 5, message = "Maximum 5 images allowed")

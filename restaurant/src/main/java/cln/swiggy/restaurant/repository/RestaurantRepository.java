@@ -19,11 +19,11 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
 
     List<Restaurant> findAll(@Nullable Specification<Restaurant> spec);
 
-    List<Restaurant> findAllByName(String restaurantName);
+    List<Restaurant> findAllByNameAndIsAvailableTrue(String restaurantName);
 
     boolean existsByNameAndOutlet(String name, String outlet);
 
-    @Query(nativeQuery = true, value = "SELECT * FROM restaurant ORDER BY id DESC LIMIT ?")
+    @Query(nativeQuery = true, value = "SELECT * FROM restaurant ORDER BY created_at DESC LIMIT ?")
     List<Restaurant> getLatestRestaurants(int limit);
 
 

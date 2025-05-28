@@ -73,31 +73,6 @@ public class BookingServiceImpl implements BookingService {
                 "Booking details retrieved successfully", booking));
     }
 
-    @Override
-    public ResponseEntity<CommonResponse> confirmBooking(Long bookingId) {
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
-        booking.setBookingStatus(BookingStatus.CONFIRMED);
-        bookingRepository.save(booking);
-
-        String userEmail = (String) rabbitTemplate.convertSendAndReceive(exchange, "user_email_id_key", booking.getUserId());
-
-//        snsService.publishOTP(userEmail,"Your Booking is Done !!" + booking);
-
-        return ResponseEntity.ok(new CommonResponse(HttpStatus.OK.value(),
-                "Booking confirmed successfully", booking));
-    }
-
-    @Override
-    public ResponseEntity<CommonResponse> getAllBookingsForRestaurant(Long restaurantId) {
-        List<Booking> pendingBookings = bookingRepository.findByRestaurantIdAndBookingStatus(
-                restaurantId,
-                BookingStatus.PENDING
-        );
-
-        return ResponseEntity.ok(new CommonResponse(HttpStatus.OK.value(),
-                "Pending bookings retrieved successfully", pendingBookings));
-    }
 
     @Override
     public ResponseEntity<CommonResponse> getAllBookingsForUser(Long userId) {
@@ -125,12 +100,13 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public ResponseEntity<CommonResponse> cancelBooking(Long bookingId) {
+    public ResponseEntity<CommonResponse> cancelBooking(Long bookingId,String reason) {
 
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
 
         booking.setBookingStatus(BookingStatus.CANCELLED);
+        booking.setCancellationReason(reason);
         bookingRepository.save(booking);
 
         return ResponseEntity.ok(new CommonResponse(HttpStatus.OK.value(),

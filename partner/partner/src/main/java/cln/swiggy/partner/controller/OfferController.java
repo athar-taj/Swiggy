@@ -79,9 +79,4 @@ public class OfferController {
             @RequestBody OfferRequest request) {
         return offerService.updateOffer(id, request);
     }
-
-    @GetMapping("/nearby")
-    public ResponseEntity<CommonResponse> findNearestRestaurantWithOffer(@RequestParam Double lat, @RequestParam Double lng, @RequestParam Integer radius) {
-        return restaurantService.nearestRestaurantsWithOffers(lat, lng, radius);
-    }
 }

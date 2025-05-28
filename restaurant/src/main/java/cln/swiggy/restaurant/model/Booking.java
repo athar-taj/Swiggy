@@ -27,6 +27,7 @@ public class Booking {
     private LocalTime bookingTime;
     @Enumerated(EnumType.STRING)
     private BookingStatus bookingStatus = BookingStatus.PENDING ;
+    private String cancellationReason;
     private Long OfferId;
     private LocalDateTime createdAt;
 }

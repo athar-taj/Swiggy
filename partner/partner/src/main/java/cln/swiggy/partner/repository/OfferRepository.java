@@ -11,13 +11,11 @@ import java.util.List;
 
 @Repository
 public interface OfferRepository extends JpaRepository<Offer,Long> {
-    List<Offer> findByRestaurantIdAndIsActiveTrueAndOfferType(Long restaurantId, OfferType offerType);
+    List<Offer> findByRestaurantIdAndIsActiveTrueAndOfferTypeAndEndDateAfter(Long restaurantId, OfferType offerType,LocalDateTime now);
 
-    List<Offer> findByRestaurantIdAndOfferType(Long restaurantId, OfferType offerType);
+    List<Offer> findByRestaurantIdAndOfferTypeAndEndDateAfter(Long restaurantId, OfferType offerType,LocalDateTime now);
 
-    List<Offer> findByRestaurantIdAndIsActiveTrue(Long restaurantId);
+    List<Offer> findByRestaurantIdAndIsActiveTrueAndEndDateAfter(Long restaurantId,LocalDateTime now);
 
-    List<Offer> findByRestaurantId(Long restaurantId);
-
-    List<Offer> findByRestaurantAndIsActiveAndEndDateAfter(Restaurant restaurant, boolean b, LocalDateTime now);
+    List<Offer> findByRestaurantIdAndEndDateAfter(Long restaurantId,LocalDateTime now);
 }

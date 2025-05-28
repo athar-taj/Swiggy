@@ -36,11 +36,12 @@ public class MenuServiceImpl implements MenuService {
     @Autowired  CategoryRepository categoryRepository;
     @Autowired  ImageUtils imageUtils;
     @Autowired  ElasticRepository elasticRepository;
+    @Autowired  MenuResponse menuResponse;
 
     @Override
-    public ResponseEntity<CommonResponse> createMenuItem(Long restaurantId, MenuRequest request) throws ResourceNotFoundException {
-            Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + restaurantId));
+    public ResponseEntity<CommonResponse> createMenuItem(MenuRequest request) throws ResourceNotFoundException {
+            Restaurant restaurant = restaurantRepository.findById(request.getRestaurantId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + request.getRestaurantId()));
 
             Category category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + request.getCategoryId()));
@@ -58,6 +59,8 @@ public class MenuServiceImpl implements MenuService {
             menu.setDescription(request.getDescription());
             menu.setPrice(request.getPrice());
             menu.setDiscount(request.getDiscount());
+            menu.setMinimumOrderValue(request.getMinimumOrderValue());
+            menu.setMenuType(request.getMenuType());
             menu.setIsAvailable(true);
             menu.setCreatedAt(LocalDateTime.now());
             menu.setUpdatedAt(LocalDateTime.now());
@@ -77,7 +80,7 @@ public class MenuServiceImpl implements MenuService {
         ElasticObject elasticObject = new ElasticObject();
         elasticObject.setElementId(savedMenu.getId());
         elasticObject.setLabel("Dish");
-        elasticObject.setMenu(MenuResponse.convertToResponse(savedMenu,menuImageRepository));
+        elasticObject.setMenu(menuResponse.convertToResponse(savedMenu));
         elasticRepository.save(elasticObject);
 
         return ResponseEntity.ok(new CommonResponse(201, "Menu item created successfully",true));
@@ -92,7 +95,7 @@ public class MenuServiceImpl implements MenuService {
             }
 
         List<MenuResponse> responses = menuItems.stream()
-                .map(menu -> MenuResponse.convertToResponse(menu, menuImageRepository))
+                .map(menu -> menuResponse.convertToResponse(menu))
                 .collect(Collectors.toList());
             return ResponseEntity.ok(new CommonResponse(200, "Menu items retrieved successfully", responses));
     }
@@ -103,7 +106,7 @@ public class MenuServiceImpl implements MenuService {
                     .orElseThrow(() -> new ResourceNotFoundException("Menu item not found with id: " + menuItemId));
 
             return ResponseEntity.ok(new CommonResponse(200, "Menu item retrieved successfully",
-                    MenuResponse.convertToResponse(menuItem,menuImageRepository)));
+                    menuResponse.convertToResponse(menuItem)));
     }
 
     @Override
@@ -120,10 +123,12 @@ public class MenuServiceImpl implements MenuService {
             }
 
             menu.setName(request.getName());
+            menu.setMenuType(request.getMenuType());
             menu.setCategory(category);
             menu.setDescription(request.getDescription());
             menu.setPrice(request.getPrice());
             menu.setDiscount(request.getDiscount());
+            menu.setMinimumOrderValue(request.getMinimumOrderValue());
             menu.setUpdatedAt(LocalDateTime.now());
 
             if (request.getImages() != null && !request.getImages().isEmpty()) {

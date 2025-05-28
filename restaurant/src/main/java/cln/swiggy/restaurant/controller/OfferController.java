@@ -47,39 +47,6 @@ public class OfferController {
         return offerService.getRestaurantOffers(restaurantId, activeOnly, offerType);
     }
 
-    @Operation(summary = "Create new offer",
-            description = "Create a new offer for a restaurant")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Offer created successfully",
-                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid offer data"),
-            @ApiResponse(responseCode = "404", description = "Restaurant not found")
-    })
-    @PostMapping
-    public ResponseEntity<CommonResponse> createOffer(
-            @Parameter(description = "Offer details", required = true)
-            @RequestBody OfferRequest request) {
-        return offerService.createOffer(request);
-    }
-
-    @Operation(summary = "Update existing offer",
-            description = "Update an existing offer by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Offer updated successfully",
-                    content = @Content(schema = @Schema(implementation = CommonResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Offer not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid offer data")
-    })
-    @PutMapping("/{id}")
-    public ResponseEntity<CommonResponse> updateOffer(
-            @Parameter(description = "ID of the offer to update", required = true)
-            @PathVariable Long id,
-
-            @Parameter(description = "Updated offer details", required = true)
-            @RequestBody OfferRequest request) {
-        return offerService.updateOffer(id, request);
-    }
-
     @GetMapping("/nearby")
     public ResponseEntity<CommonResponse> findNearestRestaurantWithOffer(@RequestParam Double lat, @RequestParam Double lng, @RequestParam Integer radius) {
         return restaurantService.nearestRestaurantsWithOffers(lat, lng, radius);

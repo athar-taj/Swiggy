@@ -43,35 +43,10 @@ public class RestaurantController {
                     "The restaurant data should be provided as JSON string in the restaurantData part."
     )
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Restaurant created successfully",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = CommonResponse.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid input data or validation failed",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = CommonResponse.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "415",
-                    description = "Unsupported media type",
-                    content = @Content
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = CommonResponse.class)
-                    )
-            )
+            @ApiResponse(responseCode = "200", description = "Restaurant created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data or validation failed"),
+            @ApiResponse(responseCode = "415", description = "Unsupported media type"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping(
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE},
@@ -280,4 +255,21 @@ public class RestaurantController {
             @PathVariable Long restaurantId) throws ResourceNotFoundException {
         return restaurantService.getRestaurantMenus(restaurantId);
     }
+
+
+    @GetMapping("/{restaurantId}/activate")
+    public ResponseEntity<CommonResponse> activateRestaurant(
+            @Parameter(description = "ID of the restaurant", required = true)
+            @PathVariable Long restaurantId) throws ResourceNotFoundException {
+        return restaurantService.activateRestaurant(restaurantId);
+    }
+
+    @GetMapping("/{restaurantId}/deactivate")
+    public ResponseEntity<CommonResponse> deActivateRestaurant(
+            @Parameter(description = "ID of the restaurant", required = true)
+            @PathVariable Long restaurantId) throws ResourceNotFoundException {
+        return restaurantService.deActivateRestaurant(restaurantId);
+    }
+
+
 }

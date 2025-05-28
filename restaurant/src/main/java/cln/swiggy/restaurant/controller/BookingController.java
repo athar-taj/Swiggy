@@ -49,31 +49,6 @@ public class BookingController {
         return bookingService.getBookingDetails(bookingId);
     }
 
-    @Operation(summary = "Get restaurant bookings", description = "Retrieves all bookings for a specific restaurant")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Restaurant bookings retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Restaurant not found")
-    })
-    @GetMapping("/restaurant/{restaurantId}")
-    public ResponseEntity<CommonResponse> getRestaurantBookings(
-            @Parameter(description = "ID of the restaurant")
-            @PathVariable @NotNull Long restaurantId) {
-        return bookingService.getAllBookingsForRestaurant(restaurantId);
-    }
-
-    @Operation(summary = "Confirm booking", description = "Confirms a pending booking")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Booking confirmed successfully"),
-            @ApiResponse(responseCode = "404", description = "Booking not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid booking state")
-    })
-    @PostMapping("/{bookingId}/confirm")
-    public ResponseEntity<CommonResponse> confirmBooking(
-            @Parameter(description = "ID of the booking to confirm")
-            @PathVariable @NotNull Long bookingId) {
-        return bookingService.confirmBooking(bookingId);
-    }
-
     @Operation(summary = "Get user bookings", description = "Retrieves all bookings for a specific user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User bookings retrieved successfully"),
@@ -109,7 +84,8 @@ public class BookingController {
     @DeleteMapping("/{bookingId}")
     public ResponseEntity<CommonResponse> cancelBooking(
             @Parameter(description = "ID of the booking to cancel")
-            @PathVariable @NotNull Long bookingId) {
-        return bookingService.cancelBooking(bookingId);
+            @PathVariable @NotNull Long bookingId,
+            @RequestBody String reason) {
+        return bookingService.cancelBooking(bookingId,reason);
     }
 }
