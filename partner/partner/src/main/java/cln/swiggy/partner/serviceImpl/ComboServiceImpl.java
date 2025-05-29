@@ -7,7 +7,10 @@ import cln.swiggy.partner.model.response.ComboResponse;
 import cln.swiggy.partner.model.response.CommonResponse;
 import cln.swiggy.partner.repository.MenuRepository;
 import cln.swiggy.partner.repository.OfferRepository;
+import cln.swiggy.partner.serviceImpl.otherImple.NotificationUtil;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,7 @@ import cln.swiggy.partner.service.ComboService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +35,14 @@ public class ComboServiceImpl implements ComboService {
     @Autowired OfferRepository offerRepository;
     @Autowired RestaurantRepository restaurantRepository;
     @Autowired ComboResponse comboResponse;
+    @Autowired RabbitTemplate rabbitTemplate;
+
+    @Value("${rabbitmq.notification.user.exchange}")
+    private String notificationExchange;
+
+    @Value("${rabbitmq.notification.user.routing_Key}")
+    private String notificationRoutingKey;
+
 
     @Override
     public ResponseEntity<CommonResponse> addCombo(List<MultipartFile> images, ComboOfferRequest request) {
@@ -76,6 +88,9 @@ public class ComboServiceImpl implements ComboService {
         combo.setUpdatedAt(LocalDateTime.now());
 
         comboRepository.save(combo);
+
+        HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(restaurant.getId() ,"USER","COMBO_ADDED", LocalDateTime.now());
+        rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new CommonResponse(201,"Combo added successfully", true));

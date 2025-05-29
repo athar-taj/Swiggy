@@ -17,3 +17,7 @@ rabbitmq:
     queue: menu_price_for_order
     exchange: menu_exchange
     routing_Key : price_order_key
+  notification:
+    restaurant:
+      exchange: restaurant_notification_exchange
+      routing_Key: restaurant_booking_*

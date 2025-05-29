@@ -103,7 +103,7 @@ public class RabbitMQConfig {
                 .to(menuExchange())
                 .with(menuRoutingKey);
     }
-
+    
 
     @Bean
     public MessageConverter jsonMessageConverter() {

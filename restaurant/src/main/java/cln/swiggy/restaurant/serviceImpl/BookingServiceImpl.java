@@ -9,6 +9,7 @@ import cln.swiggy.restaurant.model.response.CommonResponse;
 import cln.swiggy.restaurant.repository.BookingRepository;
 import cln.swiggy.restaurant.repository.RestaurantRepository;
 import cln.swiggy.restaurant.service.BookingService;
+import cln.swiggy.restaurant.serviceImpl.otherImple.NotificationUtil;
 import com.aws.service.sns.service.SNSService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -28,6 +30,12 @@ public class BookingServiceImpl implements BookingService {
 
     @Value("${rabbitmq.routing-key}")
     private String routingKey;
+
+    @Value("${rabbitmq.notification.restaurant.exchange}")
+    private String notificationExchange;
+
+    @Value("${rabbitmq.notification.restaurant.routing_Key}")
+    private String notificationRoutingKey;
 
     @Autowired
     private BookingRepository bookingRepository;
@@ -60,6 +68,9 @@ public class BookingServiceImpl implements BookingService {
 
         Booking savedBooking = bookingRepository.save(booking);
 
+        HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(restaurant.getId(), "RESTAURANT","TABLE_BOOK", LocalDateTime.now());
+        rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
+
         return ResponseEntity.ok(new CommonResponse(
                 HttpStatus.OK.value(), "Booking created successfully", savedBooking));
     }
@@ -72,7 +83,6 @@ public class BookingServiceImpl implements BookingService {
         return ResponseEntity.ok(new CommonResponse(HttpStatus.OK.value(),
                 "Booking details retrieved successfully", booking));
     }
-
 
     @Override
     public ResponseEntity<CommonResponse> getAllBookingsForUser(Long userId) {
@@ -95,6 +105,9 @@ public class BookingServiceImpl implements BookingService {
 
         Booking updatedBooking = bookingRepository.save(existingBooking);
 
+        HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(existingBooking.getRestaurant().getId(), "RESTAURANT","BOOKING_UPDATE", LocalDateTime.now());
+        rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
+
         return ResponseEntity.ok(new CommonResponse(HttpStatus.OK.value(),
                 "Booking updated successfully", updatedBooking));
     }
@@ -108,6 +121,9 @@ public class BookingServiceImpl implements BookingService {
         booking.setBookingStatus(BookingStatus.CANCELLED);
         booking.setCancellationReason(reason);
         bookingRepository.save(booking);
+
+        HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(booking.getRestaurant().getId(), "RESTAURANT","BOOKING_CANCEL", LocalDateTime.now());
+        rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
 
         return ResponseEntity.ok(new CommonResponse(HttpStatus.OK.value(),
                 "Booking cancelled successfully", booking));

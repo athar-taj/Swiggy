@@ -10,6 +10,7 @@ import cln.swiggy.partner.search.model.ElasticObject;
 import cln.swiggy.partner.search.repository.ElasticRepository;
 import cln.swiggy.partner.service.RestaurantService;
 import cln.swiggy.partner.serviceImpl.otherImple.ImageUtils;
+import cln.swiggy.partner.serviceImpl.otherImple.NotificationUtil;
 import com.aws.service.s3bucket.service.StorageService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Value("${rabbitmq.routing-key}")
     private String routingKey;
+
 
     @Autowired  RestaurantRepository restaurantRepository;
     @Autowired  CategoryRepository categoryRepository;

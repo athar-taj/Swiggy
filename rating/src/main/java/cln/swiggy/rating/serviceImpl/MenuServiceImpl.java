@@ -2,12 +2,10 @@ package cln.swiggy.rating.serviceImpl;
 
 import cln.swiggy.rating.exception.ResourceNotFoundException;
 import cln.swiggy.rating.model.MenuRating;
-import cln.swiggy.rating.model.RestaurantRating;
 import cln.swiggy.rating.model.request.RatingRequest;
 import cln.swiggy.rating.model.response.CommonResponse;
 import cln.swiggy.rating.repository.MenuRatingRepository;
 import cln.swiggy.rating.service.MenuService;
-
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -75,6 +73,7 @@ public class MenuServiceImpl implements MenuService {
 
         if(Boolean.TRUE.equals(result)) {
             MenuRating savedRating = ratingRepository.save(rating);
+
             return ResponseEntity.status(HttpStatus.CREATED).body(new CommonResponse(
                     HttpStatus.CREATED.value(), "Rating created successfully", savedRating));
         }
