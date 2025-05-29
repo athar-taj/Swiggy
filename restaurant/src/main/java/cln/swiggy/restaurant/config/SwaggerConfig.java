@@ -21,7 +21,7 @@ public class SwaggerConfig {
                 .description("This API exposes endpoints for managing users.");
 
         Server devServer = new Server();
-        devServer.setUrl("http://localhost:2001");
+        devServer.setUrl("http://localhost:2002");
         devServer.setDescription("Development server");
 
         SecurityScheme securityScheme = new SecurityScheme()

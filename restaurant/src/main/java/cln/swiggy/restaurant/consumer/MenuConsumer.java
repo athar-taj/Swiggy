@@ -35,7 +35,6 @@ public class MenuConsumer {
         menu.put("AvgTime",String.valueOf(avgTimeInMinutes));
         menu.put("Price",menus.map(Menu::getPrice).orElse(null));
         menu.put("Category",menus.get().getCategory().getName());
-        System.out.println(menu);
         return menu;
     }
 

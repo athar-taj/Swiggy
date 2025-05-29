@@ -6,9 +6,11 @@ import cln.swiggy.rating.model.request.RatingRequest;
 import cln.swiggy.rating.model.response.CommonResponse;
 import cln.swiggy.rating.repository.RestaurantRatingRepository;
 import cln.swiggy.rating.service.RestaurantService;
+import cln.swiggy.rating.serviceImpl.OtherImpl.NotificationUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,12 @@ import java.util.Optional;
 
 @Service
 public class RestaurantServiceImpl implements RestaurantService {
+
+    @Value("${rabbitmq.notification.restaurant.exchange}")
+    private String notificationExchange;
+
+    @Value("${rabbitmq.notification.restaurant.routing_Key}")
+    private String notificationRoutingKey;
 
     @Autowired
     RestaurantRatingRepository ratingRepository;
@@ -84,6 +92,10 @@ public class RestaurantServiceImpl implements RestaurantService {
 
             if(Boolean.TRUE.equals(result)) {
                 RestaurantRating savedRating = ratingRepository.save(rating);
+
+                HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(request.getElementId(), "RESTAURANT","NEW_RATING", LocalDateTime.now());
+                rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
+
                 return ResponseEntity.status(HttpStatus.CREATED).body(new CommonResponse(
                         HttpStatus.CREATED.value(), "Rating created successfully", savedRating));
             }
@@ -123,7 +135,11 @@ public class RestaurantServiceImpl implements RestaurantService {
 
             RestaurantRating updatedRating = ratingRepository.save(existingRating);
 
-            return ResponseEntity.ok( new CommonResponse(
+            HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(request.getElementId(), "RESTAURANT","NEW_RATING", LocalDateTime.now());
+            rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
+
+
+        return ResponseEntity.ok( new CommonResponse(
                     HttpStatus.OK.value(),"Rating updated successfully", updatedRating));
     }
 

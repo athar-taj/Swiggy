@@ -3,6 +3,9 @@ package cln.swiggy.payment.serviceImpl;
 import cln.swiggy.payment.model.Payment;
 import cln.swiggy.payment.serviceImpl.OtherImpl.EntityValidator;
 import cln.swiggy.payment.serviceImpl.OtherImpl.IDGenerator;
+import cln.swiggy.payment.serviceImpl.OtherImpl.NotificationUtil;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import cln.swiggy.payment.model.enums.PaymentStatus;
@@ -14,16 +17,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
 
+    @Value("${rabbitmq.notification.restaurant.exchange}")
+    private String notificationExchange;
+
+    @Value("${rabbitmq.notification.restaurant.routing_Key}")
+    private String notificationRoutingKey;
+
+
     @Autowired
     PaymentRepository paymentRepository;
     @Autowired
     EntityValidator entityValidator;
+    @Autowired
+    RabbitTemplate rabbitTemplate;
 
     @Override
     public ResponseEntity<CommonResponse> getPaymentById(Long paymentId) {
@@ -50,6 +64,10 @@ public class PaymentServiceImpl implements PaymentService {
             payment.setPaymentMethod(paymentRequest.getPaymentMethod());
 
             Payment savedPayment = paymentRepository.save(payment);
+
+//            HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(restaurant.getId(), "RESTAURANT","PAYMENT_CREATE", LocalDateTime.now());
+//            rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
+
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new CommonResponse(HttpStatus.CREATED.value(),"Payment created successfully", savedPayment));
         }

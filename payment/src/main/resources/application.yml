@@ -4,3 +4,9 @@ spring:
     port: 5672
     username: guest
     password: guest
+
+rabbitmq:
+  notification:
+    restaurant:
+      exchange: restaurant_notification_exchange
+      routing_Key: restaurant_payment_*

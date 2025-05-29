@@ -14,8 +14,10 @@ import cln.swiggy.order.repository.OrderRepository;
 import cln.swiggy.order.repository.OrdersCategoryRepository;
 import cln.swiggy.order.service.OrderService;
 import cln.swiggy.order.serviceImpl.otherImpl.EntityValidator;
+import cln.swiggy.order.serviceImpl.otherImpl.NotificationUtil;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +25,18 @@ import org.springframework.stereotype.Service;
 
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
 
 @Service
 public class OrderServiceImpl implements OrderService {
+
+    @Value("${rabbitmq.notification.restaurant.exchange}")
+    private String notificationExchange;
+
+    @Value("${rabbitmq.notification.restaurant.routing_Key}")
+    private String notificationRoutingKey;
 
     @Autowired
     OrderRepository orderRepository;
@@ -89,8 +96,11 @@ public class OrderServiceImpl implements OrderService {
                     ordersCategoryRepository.save(orders);
                 }
             Boolean result = (Boolean) rabbitTemplate.convertSendAndReceive("order_exchange", "update_order_key", savedOrder.getMenuId().toString());
-            System.out.println(result);
-                return ResponseEntity.ok( new CommonResponse(HttpStatus.OK.value(), "Order created successfully", savedOrder));
+
+            HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(request.getRestaurantId(), "RESTAURANT","ORDER_PLACE", LocalDateTime.now());
+            rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
+
+            return ResponseEntity.ok( new CommonResponse(HttpStatus.OK.value(), "Order created successfully", savedOrder));
     }
 
     @Override
@@ -124,6 +134,9 @@ public class OrderServiceImpl implements OrderService {
 
         Order updatedOrder = orderRepository.save(existingOrder);
 
+        HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(request.getRestaurantId(), "RESTAURANT","ORDER_UPDATE", LocalDateTime.now());
+        rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
+
         return ResponseEntity.ok(new CommonResponse(HttpStatus.OK.value(),"Order updated successfully",
                 orderResponse.convertToOrderResponse(updatedOrder)));
     }
@@ -152,6 +165,9 @@ public class OrderServiceImpl implements OrderService {
         }
 
         Order cancelledOrder = orderRepository.save(order);
+
+        HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(order.getRestaurantId(), "RESTAURANT","CANCEL_ORDER", LocalDateTime.now());
+        rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
 
         return ResponseEntity.ok(new CommonResponse(
                 HttpStatus.OK.value(),"Order cancelled successfully",cancelledOrder));

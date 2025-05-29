@@ -10,11 +10,16 @@ import cln.swiggy.partner.model.response.CommonResponse;
 import cln.swiggy.partner.repository.AddressRepository;
 import cln.swiggy.partner.repository.RestaurantRepository;
 import cln.swiggy.partner.service.AddressService;
+import cln.swiggy.partner.serviceImpl.otherImple.NotificationUtil;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,6 +32,14 @@ public class AddressServiceImpl implements AddressService {
     AddressRepository addressRepository;
     @Autowired
     RestaurantRepository restaurantRepository;
+    @Autowired
+    RabbitTemplate rabbitTemplate;
+
+    @Value("${rabbitmq.notification.restaurant.exchange}")
+    private String notificationExchange;
+
+    @Value("${rabbitmq.notification.restaurant.routing_Key}")
+    private String notificationRoutingKey;
 
     @Override
     public ResponseEntity<CommonResponse> getAddress(Long restaurantId) throws ResourceNotFoundException {
@@ -63,6 +76,9 @@ public class AddressServiceImpl implements AddressService {
         address.setPincode(request.getPincode());
 
         Address savedAddress = addressRepository.save(address);
+
+        HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(restaurant.getId(), "USER","NEW_RESTAURANT", LocalDateTime.now());
+        rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
 
         return ResponseEntity.ok(new CommonResponse(HttpStatus.CREATED.value(),"Address created successfully",savedAddress));
     }

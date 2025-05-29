@@ -10,23 +10,35 @@ import cln.swiggy.partner.model.response.OfferResponse;
 import cln.swiggy.partner.repository.OfferRepository;
 import cln.swiggy.partner.repository.RestaurantRepository;
 import cln.swiggy.partner.service.OfferService;
+import cln.swiggy.partner.serviceImpl.otherImple.NotificationUtil;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
 public class OfferServiceImpl implements OfferService {
 
-    @Autowired
-    private OfferRepository offerRepository;
+    @Value("${rabbitmq.notification.user.exchange}")
+    private String notificationExchange;
+
+    @Value("${rabbitmq.notification.user.routing_Key}")
+    private String notificationRoutingKey;
 
     @Autowired
-    private RestaurantRepository restaurantRepository;
+    OfferRepository offerRepository;
 
+    @Autowired
+    RestaurantRepository restaurantRepository;
+
+    @Autowired
+    RabbitTemplate rabbitTemplate;
 
     public ResponseEntity<CommonResponse> createOffer(OfferRequest request) {
         Restaurant restaurant = restaurantRepository.findById(request.getRestaurantId())
@@ -51,6 +63,10 @@ public class OfferServiceImpl implements OfferService {
         offer.setUpdatedAt(LocalDateTime.now());
 
         Offer savedOffer = offerRepository.save(offer);
+
+        HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(restaurant.getId(), "USER","OFFER_ADDED", LocalDateTime.now());
+        rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
+
         return ResponseEntity.ok(new CommonResponse(200, "Offer created successfully", true));
     }
 

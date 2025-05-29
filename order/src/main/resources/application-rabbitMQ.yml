@@ -23,3 +23,7 @@ rabbitmq:
     queue: update_menu_order_count
     exchange: order_exchange
     routing-key: update_order_key
+  notification:
+    restaurant:
+      exchange: restaurant_notification_exchange
+      routing_Key: restaurant_order_*

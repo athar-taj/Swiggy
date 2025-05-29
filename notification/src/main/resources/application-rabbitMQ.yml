@@ -1,0 +1,31 @@
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+rabbitmq:
+  user-notification:
+    exchange: user_notification_exchange
+    queues:
+      booking: user_notification_booking_queue
+      offer: user_notification_offer_queue
+      itemCombo: user_notification_itemcombo_queue
+    routing-keys:
+      booking: user_booking_*
+      offer: user_offer_*
+      itemCombo: user_itemcombo_*
+
+  restaurant-notification:
+    exchange: restaurant_notification_exchange
+    queues:
+      order: restaurant_notification_order_queue
+      booking: restaurant_notification_booking_queue
+      payment: restaurant_notification_payment_queue
+      rating: restaurant_notification_rating_queue
+    routing-keys:
+      order: restaurant_order_*
+      booking: restaurant_booking_*
+      payment: restaurant_payment_*
+      rating: restaurant_rating_*
