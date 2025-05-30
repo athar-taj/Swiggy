@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/rating-restaurants")
+@RequestMapping("/api/restaurants-rating")
 @Tag(name = "Restaurant Rating Controller",
         description = "Endpoints for managing restaurant ratings and reviews")
 public class RestaurantRatingController {
@@ -33,7 +33,7 @@ public class RestaurantRatingController {
             @ApiResponse(responseCode = "404", description = "Rating not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/ratings/{ratingId}")
+    @GetMapping("/{ratingId}")
     public ResponseEntity<CommonResponse> getRating(
             @Parameter(description = "ID of the rating to retrieve", required = true)
             @PathVariable Long ratingId) {
@@ -71,7 +71,7 @@ public class RestaurantRatingController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Cannot modify other user's rating"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PutMapping("/ratings/{ratingId}")
+    @PutMapping("/{ratingId}")
     public ResponseEntity<CommonResponse> updateRating(
             @Parameter(description = "ID of the rating to update", required = true)
             @PathVariable Long ratingId,
@@ -88,7 +88,7 @@ public class RestaurantRatingController {
             @ApiResponse(responseCode = "404", description = "User not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/ratings/user/{userId}")
+    @GetMapping("/user/{userId}")
     public ResponseEntity<CommonResponse> getUserRatings(
             @Parameter(description = "ID of the user whose ratings to retrieve", required = true)
             @PathVariable Long userId) {

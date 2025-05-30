@@ -25,7 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/menu")
+@RequestMapping("/api/partner/menu")
 @Tag(name = "Restaurant Menu", description = "APIs for managing restaurant menu items")
 public class MenuController {
 

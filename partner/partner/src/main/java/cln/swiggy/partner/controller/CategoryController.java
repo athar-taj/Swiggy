@@ -23,7 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/category")
+@RequestMapping("/api/partner/category")
 @Tag(name = "Category Management", description = "APIs for managing restaurant categories")
 public class CategoryController {
 

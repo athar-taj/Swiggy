@@ -4,3 +4,4 @@ spring:
       - aws
       - rabbitMQ
       - elastic
+      - eureka

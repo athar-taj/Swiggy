@@ -4,6 +4,7 @@ import cln.swiggy.notification.model.Notification;
 import cln.swiggy.notification.model.enums.NotificationType;
 import cln.swiggy.notification.model.enums.ReceiverType;
 import cln.swiggy.notification.model.response.CommonResponse;
+import cln.swiggy.notification.model.response.NotificationResponse;
 import cln.swiggy.notification.repository.NotificationRepository;
 import cln.swiggy.notification.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,19 +55,19 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     public ResponseEntity<CommonResponse> getRestaurantsNotification(Long restaurantId){
-        List<Notification> notifications = notificationRepository.findByReceiverIdAndReceiverType(restaurantId,ReceiverType.RESTAURANT.toString());
+        List<Notification> notifications = notificationRepository.findByReceiverIdAndReceiverType(restaurantId,ReceiverType.RESTAURANT);
         if(notifications.isEmpty()){
             return ResponseEntity.ok(new CommonResponse(404,"No Notifications Found",null));
         }
-        return ResponseEntity.ok(new CommonResponse(200,"Notifications fetched Successfully",notifications));
+        return ResponseEntity.ok(new CommonResponse(200,"Notifications fetched Successfully", NotificationResponse.convertToResponse(notifications)));
     }
 
     public ResponseEntity<CommonResponse> getUsersNotification(Long userId){
-        List<Notification> notifications = notificationRepository.findByReceiverIdAndReceiverType(userId,ReceiverType.USER.toString());
+        List<Notification> notifications = notificationRepository.findByReceiverIdAndReceiverType(userId,ReceiverType.USER);
         if(notifications.isEmpty()){
             return ResponseEntity.ok(new CommonResponse(404,"No Notifications Found",null));
         }
-        return ResponseEntity.ok(new CommonResponse(200,"Notifications fetched Successfully",notifications));
+        return ResponseEntity.ok(new CommonResponse(200,"Notifications fetched Successfully",NotificationResponse.convertToResponse(notifications)));
     }
 
 

@@ -18,7 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/restaurant/offers")
+@RequestMapping("/api/partner/restaurants/offers")
 @RequiredArgsConstructor
 @Tag(name = "Offer Controller", description = "APIs for managing restaurant offers")
 public class OfferController {
