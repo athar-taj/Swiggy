@@ -67,18 +67,16 @@ public class JWTConfig {
         }
     }
 
-    public Boolean debugToken(String token) {
+
+    public Claims validateToken(String token) {
         try {
             JwtParser parser = Jwts.parser()
                     .verifyWith(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)))
                     .build();
 
-            Claims claims = parser.parseSignedClaims(token).getPayload();
-
-            return true;
+            return parser.parseSignedClaims(token).getPayload();
         } catch (Exception e) {
-            System.out.println("Token validation failed: " + e.getMessage());
-            return false;
+            return null;
         }
     }
 }

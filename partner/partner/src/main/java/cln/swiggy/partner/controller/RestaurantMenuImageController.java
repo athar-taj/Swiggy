@@ -18,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/restaurants/menu-images")
+@RequestMapping("/api/partner/restaurants/menu-images")
 @Tag(name = "Restaurant Menu Images", description = "Endpoints for managing restaurant menu images")
 public class RestaurantMenuImageController {
 

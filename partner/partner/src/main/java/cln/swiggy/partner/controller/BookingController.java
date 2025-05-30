@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/restaurant/bookings")
+@RequestMapping("/api/partner/restaurants/bookings")
 @Tag(name = "Restaurant Bookings", description = "APIs for managing restaurant bookings")
 public class BookingController {
 

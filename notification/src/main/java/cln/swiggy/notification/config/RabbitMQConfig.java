@@ -23,31 +23,19 @@ public class RabbitMQConfig {
     private String restaurantExchange;
 
     // User queues
-    @Value("${rabbitmq.user-notification.queues.order}")
-    private String userOrderQueue;
     @Value("${rabbitmq.user-notification.queues.booking}")
     private String userBookingQueue;
-    @Value("${rabbitmq.user-notification.queues.payment}")
-    private String userPaymentQueue;
     @Value("${rabbitmq.user-notification.queues.offer}")
     private String userOfferQueue;
     @Value("${rabbitmq.user-notification.queues.itemCombo}")
     private String userItemComboQueue;
-    @Value("${rabbitmq.user-notification.queues.rating}")
-    private String userRatingQueue;
 
-    @Value("${rabbitmq.user-notification.routing-keys.order}")
-    private String userOrderRoutingKey;
     @Value("${rabbitmq.user-notification.routing-keys.booking}")
     private String userBookingRoutingKey;
-    @Value("${rabbitmq.user-notification.routing-keys.payment}")
-    private String userPaymentRoutingKey;
     @Value("${rabbitmq.user-notification.routing-keys.offer}")
     private String userOfferRoutingKey;
     @Value("${rabbitmq.user-notification.routing-keys.itemCombo}")
     private String userItemComboRoutingKey;
-    @Value("${rabbitmq.user-notification.routing-keys.rating}")
-    private String userRatingRoutingKey;
 
     // Restaurant queues
     @Value("${rabbitmq.restaurant-notification.queues.order}")
@@ -83,19 +71,10 @@ public class RabbitMQConfig {
 
     // USER
 
-    @Bean public Queue userOrderQueueBean() { return new Queue(userOrderQueue); }
-    @Bean public Binding userOrderBinding() {
-        return BindingBuilder.bind(userOrderQueueBean()).to(userNotificationExchange()).with(userOrderRoutingKey);
-    }
 
     @Bean public Queue userBookingQueueBean() { return new Queue(userBookingQueue); }
     @Bean public Binding userBookingBinding() {
         return BindingBuilder.bind(userBookingQueueBean()).to(userNotificationExchange()).with(userBookingRoutingKey);
-    }
-
-    @Bean public Queue userPaymentQueueBean() { return new Queue(userPaymentQueue); }
-    @Bean public Binding userPaymentBinding() {
-        return BindingBuilder.bind(userPaymentQueueBean()).to(userNotificationExchange()).with(userPaymentRoutingKey);
     }
 
     @Bean public Queue userOfferQueueBean() { return new Queue(userOfferQueue); }
@@ -106,11 +85,6 @@ public class RabbitMQConfig {
     @Bean public Queue userItemComboQueueBean() { return new Queue(userItemComboQueue); }
     @Bean public Binding userItemComboBinding() {
         return BindingBuilder.bind(userItemComboQueueBean()).to(userNotificationExchange()).with(userItemComboRoutingKey);
-    }
-
-    @Bean public Queue userRatingQueueBean() { return new Queue(userRatingQueue); }
-    @Bean public Binding userRatingBinding() {
-        return BindingBuilder.bind(userRatingQueueBean()).to(userNotificationExchange()).with(userRatingRoutingKey);
     }
 
 // RESTAURANT

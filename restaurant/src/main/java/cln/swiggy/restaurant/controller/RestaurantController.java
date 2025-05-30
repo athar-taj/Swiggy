@@ -36,7 +36,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/restaurant")
+@RequestMapping("/api/restaurants")
 public class RestaurantController {
 
     @Autowired

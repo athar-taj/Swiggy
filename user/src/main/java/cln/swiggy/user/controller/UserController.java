@@ -5,6 +5,7 @@ import cln.swiggy.user.model.request.UserRequest;
 import cln.swiggy.user.model.response.CommonResponse;
 import cln.swiggy.user.repository.UserRepository;
 import cln.swiggy.user.service.UserService;
+import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -88,5 +89,15 @@ public class UserController {
     @GetMapping("/location")
     public ResponseEntity<CommonResponse> updateLocation(@RequestParam Long userId,@RequestParam Double latitude,@RequestParam Double longitude) {
         return userService.updateLocation(userId, latitude, longitude);
+    }
+
+    @GetMapping("/validate-token")
+    public ResponseEntity<CommonResponse> validateToken(@RequestParam String token) {
+        Claims claims = jwtConfig.validateToken(token);
+        if (claims != null) {
+            return ResponseEntity.ok(new CommonResponse(200, "Token is valid!", claims.getSubject() + " is valid!"));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new CommonResponse(400, "Invalid Token!", null));
     }
 }

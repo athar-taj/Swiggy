@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/address")
+@RequestMapping("/api/users/address")
 @Tag(name = "Address", description = "User's Address related APIs")
 @SecurityRequirement(name = "bearer-jwt")
 public class AddressController {

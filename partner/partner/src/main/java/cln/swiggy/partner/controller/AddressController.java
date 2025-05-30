@@ -16,7 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/restaurants")
+@RequestMapping("/api/partner/restaurants")
 @Tag(name = "Restaurant Address", description = "Restaurant Address Management APIs")
 public class AddressController {
 

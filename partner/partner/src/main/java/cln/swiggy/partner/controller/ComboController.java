@@ -22,7 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/combos")
+@RequestMapping("/api/partner/combos")
 public class ComboController {
 
     @Autowired ComboService comboService;

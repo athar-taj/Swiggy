@@ -1,0 +1,111 @@
+eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+
+spring:
+  cloud:
+    discovery:
+      enabled: true
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+
+        - id: USER
+          uri: http://localhost:2001/api/users
+          predicates:
+            - Path=/api/users/**
+
+        - id: RESTAURANT
+          uri: http://localhost:2002/api/restaurants
+          predicates:
+            - Path=/api/restaurants/**
+
+        - id: CART
+          uri: http://localhost:2002/api/cart
+          predicates:
+            - Path=/api/cart/**
+
+        - id: CATEGORY
+          uri: http://localhost:2002/api/category
+          predicates:
+            - Path=/api/category/**
+
+        - id: FACILITIES
+          uri: http://localhost:2002/api/facilities
+          predicates:
+            - Path=/api/facilities/**
+
+        - id: MENU ITEM
+          uri: http://localhost:2002/api/menu
+          predicates:
+            - Path=/api/menu/**
+
+        - id: WISHLIST
+          uri: http://localhost:2002/api/wishlist
+          predicates:
+            - Path=/api/wishlist/**
+
+        - id: ORDERS
+          uri: http://localhost:2003/api/orders
+          predicates:
+            - Path=/api/orders/**
+
+        - id: PAYMENT
+          uri: http://localhost:2004/api/payment
+          predicates:
+            - Path=/api/payment/**
+
+        - id: MENU RATING
+          uri: http://localhost:2005/api/menu-ratings
+          predicates:
+            - Path=/api/menu-ratings/**
+
+        - id: RESTAURANT RATING
+          uri: http://localhost:2005/api/restaurants-rating
+          predicates:
+            - Path=/api/restaurants-rating/**
+
+        - id: RESTAURANT FEEDBACK
+          uri: http://localhost:2005/api/feedbacks
+          predicates:
+            - Path=/api/feedbacks/**
+
+        - id: RESTAURANT PARTNER
+          uri: http://localhost:2006/api/partner/restaurants
+          predicates:
+            - Path=/api/partner/restaurants/**
+
+        - id: CATEGORY PARTNER
+          uri: http://localhost:2006/api/partner/category
+          predicates:
+            - Path=/api/partner/category/**
+
+        - id: ITEM COMBO
+          uri: http://localhost:2006/api/partner/combos
+          predicates:
+            - Path=/api/partner/combos/**
+
+        - id: FACILITIES
+          uri: http://localhost:2006/api/partner/facilities
+          predicates:
+            - Path=/api/partner/facilities/**
+
+        - id: PARTNER MENU
+          uri: http://localhost:2006/api/partner/menu
+          predicates:
+            - Path=/api/partner/menu/**
+
+        - id: NOTIFICATION
+          uri: http://localhost:2007/api/notifications
+          predicates:
+            - Path=/api/notifications/**
