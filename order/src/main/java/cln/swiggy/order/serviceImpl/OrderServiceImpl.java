@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 
 @Service
@@ -51,56 +52,56 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public ResponseEntity<CommonResponse> createOrder(OrderRequest request) {
-                entityValidator.validateUserExists(request.getUserId());
-                entityValidator.validateRestaurantExists(request.getRestaurantId());
+        entityValidator.validateUserExists(request.getUserId());
+        entityValidator.validateRestaurantExists(request.getRestaurantId());
 
-                HashMap<String,Object> data = (HashMap<String, Object>) rabbitTemplate.convertSendAndReceive("menu_exchange","price_order_key",request.getMenuId());
-                if (data == null) {
-                    return ResponseEntity.badRequest().body(new CommonResponse(HttpStatus.BAD_REQUEST.value(),
-                            "Menu not found with id: " + request.getMenuId(), null));
-                }
+        HashMap<String,Object> data = (HashMap<String, Object>) rabbitTemplate.convertSendAndReceive("menu_exchange","price_order_key",request.getMenuId());
+        if (data == null) {
+            return ResponseEntity.badRequest().body(new CommonResponse(HttpStatus.BAD_REQUEST.value(),
+                    "Menu not found with id: " + request.getMenuId(), null));
+        }
 
-                Order order = new Order();
-                order.setUserId(request.getUserId());
-                order.setMenuId(request.getMenuId());
-                order.setRestaurantId(request.getRestaurantId());
-                order.setOrderStatus(OrderStatus.PENDING);
-                order.setDeliveryAddress(request.getDeliveryAddress());
-                order.setDeliveryCity(request.getDeliveryCity());
-                order.setPincode(request.getDeliveryPincode());
-                order.setDeliveryLandmark(request.getDeliveryLandmark());
-                order.setReceiverName(request.getReceiverName());
-                order.setReceiverPhoneNumber(request.getReceiverPhoneNumber());
-                order.setPrice((Double) data.get("Price"));
-                order.setQuantity(request.getQuantity());
-                order.setTotal_price((Double) data.get("Price") * request.getQuantity());
-                order.setDeliveryStatus(DeliveryStatus.PENDING);
-                order.setCurrentLatitude(request.getCurrentLatitude());
-                order.setCurrentLongitude(request.getCurrentLongitude());
-                order.setEstimatedDeliveryTime(data.get("AvgTime") + " mins");
-                order.setDeliveryPartnerName(request.getDeliveryPartnerName());
-                order.setDeliveryPartnerPhone(request.getDeliveryPartnerPhone());
-                order.setCreatedAt(LocalDateTime.now());
-                order.setUpdatedAt(LocalDateTime.now());
+        Order order = new Order();
+        order.setUserId(request.getUserId());
+        order.setMenuId(request.getMenuId());
+        order.setRestaurantId(request.getRestaurantId());
+        order.setOrderStatus(OrderStatus.PENDING);
+        order.setDeliveryAddress(request.getDeliveryAddress());
+        order.setDeliveryCity(request.getDeliveryCity());
+        order.setPincode(request.getDeliveryPincode());
+        order.setDeliveryLandmark(request.getDeliveryLandmark());
+        order.setReceiverName(request.getReceiverName());
+        order.setReceiverPhoneNumber(request.getReceiverPhoneNumber());
+        order.setPrice((Double) data.get("Price"));
+        order.setQuantity(request.getQuantity());
+        order.setTotal_price((Double) data.get("Price") * request.getQuantity());
+        order.setDeliveryStatus(DeliveryStatus.PENDING);
+        order.setCurrentLatitude(request.getCurrentLatitude());
+        order.setCurrentLongitude(request.getCurrentLongitude());
+        order.setEstimatedDeliveryTime(data.get("AvgTime") + " mins");
+        order.setDeliveryPartnerName(request.getDeliveryPartnerName());
+        order.setDeliveryPartnerPhone(request.getDeliveryPartnerPhone());
+        order.setCreatedAt(LocalDateTime.now());
+        order.setUpdatedAt(LocalDateTime.now());
 
-                Order savedOrder = orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
 
-                if(ordersCategoryRepository.existsByName((String) data.get("Category"))){
-                   OrdersCategory orders =  ordersCategoryRepository.findByName((String) data.get("Category"));
-                    orders.setTotalOrders(orders.getTotalOrders() + 1);
-                }
-                else {
-                    OrdersCategory orders = new OrdersCategory();
-                    orders.setName((String) data.get("Category"));
-                    orders.setTotalOrders(1);
-                    ordersCategoryRepository.save(orders);
-                }
-            Boolean result = (Boolean) rabbitTemplate.convertSendAndReceive("order_exchange", "update_order_key", savedOrder.getMenuId().toString());
+        if(ordersCategoryRepository.existsByName((String) data.get("Category"))){
+            OrdersCategory orders =  ordersCategoryRepository.findByName((String) data.get("Category"));
+            orders.setTotalOrders(orders.getTotalOrders() + 1);
+        }
+        else {
+            OrdersCategory orders = new OrdersCategory();
+            orders.setName((String) data.get("Category"));
+            orders.setTotalOrders(1);
+            ordersCategoryRepository.save(orders);
+        }
+        Boolean result = (Boolean) rabbitTemplate.convertSendAndReceive("order_exchange", "update_order_key", savedOrder.getMenuId().toString());
 
-            HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(request.getRestaurantId(), "RESTAURANT","ORDER_PLACE", LocalDateTime.now());
-            rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
+        HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(request.getRestaurantId(), "RESTAURANT","ORDER_PLACE", LocalDateTime.now());
+        rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
 
-            return ResponseEntity.ok( new CommonResponse(HttpStatus.OK.value(), "Order created successfully", savedOrder));
+        return ResponseEntity.ok( new CommonResponse(HttpStatus.OK.value(), "Order created successfully", savedOrder));
     }
 
     @Override

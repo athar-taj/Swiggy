@@ -3,6 +3,7 @@ package cln.swiggy.order.serviceImpl.otherImpl;
 import cln.swiggy.order.exception.ResourceNotFoundException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -10,6 +11,7 @@ public class EntityValidator {
     @Autowired
     RabbitTemplate rabbitTemplate;
 
+    @Async("virtualThreadExecutor")
     public void validateUserExists(Long userId) {
         Boolean isUserExists = (Boolean) rabbitTemplate.convertSendAndReceive(
             "user-exchange", 
@@ -22,6 +24,7 @@ public class EntityValidator {
         }
     }
 
+    @Async("virtualThreadExecutor")
     public void validateMenuExists(Long menuId) {
         Boolean isMenuExists = (Boolean) rabbitTemplate.convertSendAndReceive(
             "menu-exchange",
@@ -34,6 +37,7 @@ public class EntityValidator {
         }
     }
 
+    @Async("virtualThreadExecutor")
     public void validateRestaurantExists(Long restaurantId) {
         Boolean isRestaurantExists = (Boolean) rabbitTemplate.convertSendAndReceive(
             "restaurant-exchange",
