@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -29,7 +30,11 @@ public class SearchImpl {
     @Autowired RestaurantService restaurantService;
     @Autowired MenuService menuService;
 
+    @Async
     public ResponseEntity<CommonResponse> searchElastic(String keyword) throws IOException {
+
+
+
         SearchResponse<JsonData> response = elasticsearchClient.search(s -> s
                         .index("restaurants")
                         .query(q -> q
