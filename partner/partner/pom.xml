@@ -11,6 +11,7 @@
 	<groupId>cln.swiggy</groupId>
 	<artifactId>partner</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
 	<name>partner</name>
 	<description>Admin Restaurant Side Project </description>
 	<url/>
@@ -151,6 +152,13 @@
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
+			</plugin>
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.2.2</version>
 			</plugin>
 
 			<plugin>
