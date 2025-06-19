@@ -11,6 +11,7 @@
 	<groupId>cln.swiggy</groupId>
 	<artifactId>API-Gateway</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
 	<name>API-Gateway</name>
 	<description>Service Registry For Swiggy </description>
 	<url/>
@@ -113,6 +114,11 @@
 				</configuration>
 			</plugin>
 
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.2.2</version>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

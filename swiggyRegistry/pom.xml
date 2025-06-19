@@ -11,6 +11,7 @@
 	<groupId>cln.swiggy</groupId>
 	<artifactId>swiggyRegistry</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
 	<name>swiggyRegistry</name>
 	<description>Service Registry For Swiggy </description>
 	<url/>
@@ -63,6 +64,13 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.2.2</version>
 			</plugin>
 		</plugins>
 	</build>
