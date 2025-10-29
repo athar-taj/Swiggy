@@ -1,4 +1,4 @@
-package cln.swiggy.order.model.enums;
+package cln.swiggy.payment.model.enums;
 
 public enum EventType {
     ORDER_CREATED,

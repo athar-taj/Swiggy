@@ -27,3 +27,7 @@ rabbitmq:
     restaurant:
       exchange: restaurant_notification_exchange
       routing_Key: restaurant_order_*
+  saga:
+    queue: saga_event_queue
+    exchange: saga_exchange
+    routing-key: saga_key

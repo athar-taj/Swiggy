@@ -1,6 +1,6 @@
 package cln.swiggy.partner.model;
 
-import cln.swiggy.order.model.enums.EventType;
+import cln.swiggy.partner.model.enums.EventType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

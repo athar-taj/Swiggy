@@ -4,6 +4,7 @@ import cln.swiggy.payment.model.enums.PaymentStatus;
 import cln.swiggy.payment.model.request.PaymentRequest;
 import cln.swiggy.payment.model.response.CommonResponse;
 import cln.swiggy.payment.service.PaymentService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -45,8 +46,9 @@ public class PaymentController {
     })
     public ResponseEntity<CommonResponse> createPayment(
             @Parameter(description = "Payment request details", required = true)
-            @RequestBody PaymentRequest paymentRequest) {
-        return paymentService.createPayment(paymentRequest);
+            @RequestBody PaymentRequest paymentRequest,
+            @RequestParam String sagaId) throws JsonProcessingException {
+        return paymentService.createPayment(paymentRequest,sagaId);
     }
 
     @GetMapping("/order/{orderId}")

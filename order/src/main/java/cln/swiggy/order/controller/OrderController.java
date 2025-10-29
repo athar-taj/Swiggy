@@ -4,6 +4,7 @@ import cln.swiggy.order.model.enums.OrderStatus;
 import cln.swiggy.order.model.request.OrderRequest;
 import cln.swiggy.order.model.response.CommonResponse;
 import cln.swiggy.order.service.OrderService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +33,7 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<CommonResponse> createOrder(
             @Parameter(description = "Order details", required = true)
-            @RequestBody OrderRequest request) {
+            @RequestBody OrderRequest request) throws JsonProcessingException {
         return orderService.createOrder(request);
     }
 

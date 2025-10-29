@@ -6,8 +6,10 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+
 import java.util.HashMap;
 import java.util.Optional;
+
 
 @Service
 public class MenuConsumer {
@@ -56,10 +58,10 @@ public class MenuConsumer {
 
     @RabbitListener(queues = "update_menu_order_count")
     public Boolean updateMenuOrderCount(String menuId) {
-        System.out.println(menuId);
         Optional<Menu> menu = menuRepository.findById(Long.valueOf(menuId));
-        menu.get().setTotalOrders(menu.get().getTotalOrders() + 1);
-        menuRepository.save(menu.get());
-        return true;
+
+            menu.get().setTotalOrders(menu.get().getTotalOrders() + 1);
+            menuRepository.save(menu.get());
+            return true;
     }
 }

@@ -3,8 +3,10 @@ package cln.swiggy.order.serviceImpl;
 import cln.swiggy.order.exception.ResourceNotFoundException;
 import cln.swiggy.order.model.Order;
 import cln.swiggy.order.model.OrdersCategory;
+import cln.swiggy.order.model.SagaEventEntity;
 import cln.swiggy.order.model.TrackingCheckpoint;
 import cln.swiggy.order.model.enums.DeliveryStatus;
+import cln.swiggy.order.model.enums.EventType;
 import cln.swiggy.order.model.enums.OrderStatus;
 import cln.swiggy.order.model.request.OrderRequest;
 import cln.swiggy.order.model.response.CommonResponse;
@@ -13,8 +15,11 @@ import cln.swiggy.order.model.response.OrderTrackingResponse;
 import cln.swiggy.order.repository.OrderRepository;
 import cln.swiggy.order.repository.OrdersCategoryRepository;
 import cln.swiggy.order.service.OrderService;
+import cln.swiggy.order.service.SagaRepository;
 import cln.swiggy.order.serviceImpl.otherImpl.EntityValidator;
 import cln.swiggy.order.serviceImpl.otherImpl.NotificationUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +32,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -46,63 +53,88 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     OrderResponse orderResponse;
     @Autowired
+    SagaRepository sagaRepository;
+    @Autowired
     EntityValidator entityValidator;
     @Autowired
     RabbitTemplate rabbitTemplate;
 
     @Override
-    public ResponseEntity<CommonResponse> createOrder(OrderRequest request) {
-        entityValidator.validateUserExists(request.getUserId());
-        entityValidator.validateRestaurantExists(request.getRestaurantId());
+    public ResponseEntity<CommonResponse> createOrder(OrderRequest request) throws JsonProcessingException {
+            String sagaId = UUID.randomUUID().toString();
 
-        HashMap<String,Object> data = (HashMap<String, Object>) rabbitTemplate.convertSendAndReceive("menu_exchange","price_order_key",request.getMenuId());
-        if (data == null) {
-            return ResponseEntity.badRequest().body(new CommonResponse(HttpStatus.BAD_REQUEST.value(),
-                    "Menu not found with id: " + request.getMenuId(), null));
-        }
+            entityValidator.validateUserExists(request.getUserId());
+            entityValidator.validateRestaurantExists(request.getRestaurantId());
+            entityValidator.validateMenuExists(request.getMenuId());
 
-        Order order = new Order();
-        order.setUserId(request.getUserId());
-        order.setMenuId(request.getMenuId());
-        order.setRestaurantId(request.getRestaurantId());
-        order.setOrderStatus(OrderStatus.PENDING);
-        order.setDeliveryAddress(request.getDeliveryAddress());
-        order.setDeliveryCity(request.getDeliveryCity());
-        order.setPincode(request.getDeliveryPincode());
-        order.setDeliveryLandmark(request.getDeliveryLandmark());
-        order.setReceiverName(request.getReceiverName());
-        order.setReceiverPhoneNumber(request.getReceiverPhoneNumber());
-        order.setPrice((Double) data.get("Price"));
-        order.setQuantity(request.getQuantity());
-        order.setTotal_price((Double) data.get("Price") * request.getQuantity());
-        order.setDeliveryStatus(DeliveryStatus.PENDING);
-        order.setCurrentLatitude(request.getCurrentLatitude());
-        order.setCurrentLongitude(request.getCurrentLongitude());
-        order.setEstimatedDeliveryTime(data.get("AvgTime") + " mins");
-        order.setDeliveryPartnerName(request.getDeliveryPartnerName());
-        order.setDeliveryPartnerPhone(request.getDeliveryPartnerPhone());
-        order.setCreatedAt(LocalDateTime.now());
-        order.setUpdatedAt(LocalDateTime.now());
+            HashMap<String, Object> data = (HashMap<String, Object>) rabbitTemplate.convertSendAndReceive(
+                    "menu_exchange", "price_order_key", request.getMenuId());
 
-        Order savedOrder = orderRepository.save(order);
+            if (data == null) {
+                return ResponseEntity.badRequest().body(new CommonResponse(HttpStatus.BAD_REQUEST.value(),
+                        "Menu not found with id: " + request.getMenuId(), null));
+            }
 
-        if(ordersCategoryRepository.existsByName((String) data.get("Category"))){
-            OrdersCategory orders =  ordersCategoryRepository.findByName((String) data.get("Category"));
-            orders.setTotalOrders(orders.getTotalOrders() + 1);
-        }
-        else {
-            OrdersCategory orders = new OrdersCategory();
-            orders.setName((String) data.get("Category"));
-            orders.setTotalOrders(1);
-            ordersCategoryRepository.save(orders);
-        }
-        Boolean result = (Boolean) rabbitTemplate.convertSendAndReceive("order_exchange", "update_order_key", savedOrder.getMenuId().toString());
+            Order order = new Order();
+            order.setUserId(request.getUserId());
+            order.setMenuId(request.getMenuId());
+            order.setRestaurantId(request.getRestaurantId());
+            order.setOrderStatus(OrderStatus.PENDING);
+            order.setDeliveryAddress(request.getDeliveryAddress());
+            order.setDeliveryCity(request.getDeliveryCity());
+            order.setPincode(request.getDeliveryPincode());
+            order.setDeliveryLandmark(request.getDeliveryLandmark());
+            order.setReceiverName(request.getReceiverName());
+            order.setReceiverPhoneNumber(request.getReceiverPhoneNumber());
+            order.setPrice((Double) data.get("Price"));
+            order.setQuantity(request.getQuantity());
+            order.setTotal_price((Double) data.get("Price") * request.getQuantity());
+            order.setDeliveryStatus(DeliveryStatus.PENDING);
+            order.setCurrentLatitude(request.getCurrentLatitude());
+            order.setCurrentLongitude(request.getCurrentLongitude());
+            order.setEstimatedDeliveryTime(data.get("AvgTime") + " mins");
+            order.setDeliveryPartnerName(request.getDeliveryPartnerName());
+            order.setDeliveryPartnerPhone(request.getDeliveryPartnerPhone());
+            order.setCreatedAt(LocalDateTime.now());
+            order.setUpdatedAt(LocalDateTime.now());
 
-        HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(request.getRestaurantId(), "RESTAURANT","ORDER_PLACE", LocalDateTime.now());
-        rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
+            Order savedOrder = orderRepository.save(order);
 
-        return ResponseEntity.ok( new CommonResponse(HttpStatus.OK.value(), "Order created successfully", savedOrder));
+            if (ordersCategoryRepository.existsByName((String) data.get("Category"))) {
+                OrdersCategory orders = ordersCategoryRepository.findByName((String) data.get("Category"));
+                orders.setTotalOrders(orders.getTotalOrders() + 1);
+            } else {
+                OrdersCategory orders = new OrdersCategory();
+                orders.setName((String) data.get("Category"));
+                orders.setTotalOrders(1);
+                ordersCategoryRepository.save(orders);
+            }
+
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("menuId", request.getMenuId());
+            payload.put("quantity", request.getQuantity());
+            payload.put("restaurantId", request.getRestaurantId());
+            payload.put("userId", request.getUserId());
+
+            SagaEventEntity eventEntity = new SagaEventEntity();
+            eventEntity.setEventId(UUID.randomUUID().toString());
+            eventEntity.setSagaId(sagaId);
+            eventEntity.setOrderId(savedOrder.getId());
+            eventEntity.setEventType(EventType.ORDER_CREATED);
+            eventEntity.setSourceService("ORDER");
+            eventEntity.setEventTime(LocalDateTime.now());
+            eventEntity.setPayloadJson(new ObjectMapper().writeValueAsString(payload));
+            sagaRepository.save(eventEntity);
+
+            rabbitTemplate.convertAndSend("saga_exchange", "saga_key", eventEntity);
+
+//        HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(
+//                request.getRestaurantId(), "RESTAURANT", "ORDER_PLACE", LocalDateTime.now());
+//        rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
+
+            return ResponseEntity.ok(new CommonResponse(HttpStatus.OK.value(), "Order created successfully", savedOrder));
     }
+
 
     @Override
     public ResponseEntity<CommonResponse> getOrderById(Long orderId) {

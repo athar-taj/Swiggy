@@ -72,6 +72,16 @@ public class RabbitMQConfig {
     private String menuOrderRoutingKey;
 
 
+    @Value("${rabbitmq.saga.queue}")
+    private String sagaQueue;
+
+    @Value("${rabbitmq.saga.exchange}")
+    private String sagaExchange;
+
+    @Value("${rabbitmq.saga.routing-key}")
+    private String sagaRoutingKey;
+
+
     @Bean
     public DirectExchange menuExchange() {
         return new DirectExchange(menuExchange);
@@ -184,6 +194,26 @@ public class RabbitMQConfig {
                 .bind(menuOrderQueue())
                 .to(menuOrderExchange())
                 .with(menuOrderRoutingKey);
+    }
+
+
+
+    @Bean
+    public DirectExchange sagaExchange() {
+        return new DirectExchange(sagaExchange);
+    }
+
+    @Bean
+    public Queue sagaQueue() {
+        return new Queue(sagaQueue , true);
+    }
+
+    @Bean
+    public Binding sagaBinding() {
+        return BindingBuilder
+                .bind(sagaQueue())
+                .to(sagaExchange())
+                .with(sagaRoutingKey);
     }
 
 

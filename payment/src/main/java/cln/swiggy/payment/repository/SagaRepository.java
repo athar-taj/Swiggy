@@ -1,6 +1,6 @@
-package cln.swiggy.order.service;
+package cln.swiggy.payment.repository;
 
-import cln.swiggy.order.model.SagaEventEntity;
+import cln.swiggy.payment.model.SagaEventEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SagaRepository extends JpaRepository<SagaEventEntity,String> {

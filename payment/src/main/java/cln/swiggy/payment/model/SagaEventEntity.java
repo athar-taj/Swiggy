@@ -1,7 +1,11 @@
-package cln.swiggy.order.model;
-import cln.swiggy.order.model.enums.EventType;
+package cln.swiggy.payment.model;
+
+import cln.swiggy.payment.model.enums.EventType;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 

@@ -49,4 +49,5 @@ public class EntityValidator {
             throw new ResourceNotFoundException("Restaurant not found with id: " + restaurantId);
         }
     }
+
 }
