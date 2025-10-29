@@ -2,12 +2,16 @@ package cln.swiggy.restaurant.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 public class Category {
     @Id
@@ -27,4 +31,8 @@ public class Category {
     @JsonIgnore
     @OneToMany(mappedBy = "category")
     private List<Menu> menus = new ArrayList<>();
+
+    public Category(String name) {
+        this.name = name;
+    }
 }

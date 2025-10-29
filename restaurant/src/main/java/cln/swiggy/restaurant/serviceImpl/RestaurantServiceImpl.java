@@ -9,9 +9,13 @@ import cln.swiggy.restaurant.model.response.RestaurantResponse;
 import cln.swiggy.restaurant.repository.*;
 import cln.swiggy.restaurant.service.RestaurantService;
 import cln.swiggy.restaurant.serviceImpl.otherImple.CalculateDistance;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,29 +38,33 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Autowired  RestaurantRepository restaurantRepository;
     @Autowired  AddressRepository addressRepository;
     @Autowired  OfferRepository offerRepository;
+    @Autowired  RedisService redisService;
 
     @Override
+    @Cacheable(value = "restaurants_all", key = "'all_restaurants'")
     public ResponseEntity<CommonResponse> getAllRestaurants() {
-            List<Restaurant> restaurants = restaurantRepository.findAll();
+        List<Restaurant> restaurants = restaurantRepository.findAll();
 
-            if (restaurants.isEmpty()) {
-                return ResponseEntity.ok(new CommonResponse(200, "No restaurants found", new ArrayList<>()));
-            }
+        if (restaurants.isEmpty()) {
+            return ResponseEntity.ok(new CommonResponse(200, "No restaurants found", new ArrayList<>()));
+        }
 
-            List<RestaurantResponse> responses = restaurants.stream()
-                    .map(RestaurantResponse::convertToResponse)
-                    .collect(Collectors.toList());
+        List<RestaurantResponse> responses = restaurants.stream()
+                .map(RestaurantResponse::convertToResponse)
+                .collect(Collectors.toList());
 
-            return ResponseEntity.ok(new CommonResponse(200, "ElasticObject retrieved successfully", responses));
+        return ResponseEntity.ok(new CommonResponse(200, "Restaurants retrieved successfully", responses));
     }
 
-    @Override
-    public ResponseEntity<CommonResponse> getRestaurantById(Long restaurantId) throws ResourceNotFoundException{
-            Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + restaurantId));
 
-            return ResponseEntity.ok(new CommonResponse(200, "Restaurant retrieved successfully",
-                    RestaurantResponse.convertToResponse(restaurant)));
+    @Override
+    @Cacheable(value = "restaurant_by_id", key = "#restaurantId")
+    public ResponseEntity<CommonResponse> getRestaurantById(Long restaurantId) throws ResourceNotFoundException {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + restaurantId));
+
+        return ResponseEntity.ok(new CommonResponse(200, "Restaurant retrieved successfully",
+                RestaurantResponse.convertToResponse(restaurant)));
     }
 
     @Override
@@ -76,24 +84,24 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
+    @CachePut(value = "restaurant_by_id", key = "#restaurantId")
+    @CacheEvict(value = "restaurants_all", key = "'all_restaurants'")
     public ResponseEntity<CommonResponse> updateRestaurantAvailability(Long restaurantId, Boolean available) {
-            Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + restaurantId));
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + restaurantId));
 
-            restaurant.setIsAvailable(available);
-            restaurant.setUpdatedAt(LocalDateTime.now());
+        restaurant.setIsAvailable(available);
+        restaurant.setUpdatedAt(LocalDateTime.now());
+        Restaurant updatedRestaurant = restaurantRepository.save(restaurant);
 
-            Restaurant updatedRestaurant = restaurantRepository.save(restaurant);
+        Map<String, Object> availabilityInfo = new HashMap<>();
+        availabilityInfo.put("isAvailable", updatedRestaurant.getIsAvailable());
+        availabilityInfo.put("restaurantId", updatedRestaurant.getId());
+        availabilityInfo.put("restaurantName", updatedRestaurant.getName());
 
-            Map<String, Object> availabilityInfo = new HashMap<>();
-            availabilityInfo.put("isAvailable", updatedRestaurant.getIsAvailable());
-            availabilityInfo.put("restaurantId", updatedRestaurant.getId());
-            availabilityInfo.put("restaurantName", updatedRestaurant.getName());
-
-            return ResponseEntity.ok(new CommonResponse(200,
-                    "Restaurant availability " + (available ? "enabled" : "disabled") + " successfully",
-                    availabilityInfo));
-
+        return ResponseEntity.ok(new CommonResponse(200,
+                "Restaurant availability " + (available ? "enabled" : "disabled") + " successfully",
+                availabilityInfo));
     }
 
     @Override
@@ -110,7 +118,8 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
-    public ResponseEntity<CommonResponse> getRestaurantCategories(Long restaurantId) throws ResourceNotFoundException {
+    @Cacheable(value = "restaurant_categories", key = "#restaurantId")
+    public ResponseEntity<CommonResponse> getRestaurantCategories(Long restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + restaurantId));
         List<String> categories = restaurant.getCategories().stream()
@@ -156,7 +165,7 @@ public class RestaurantServiceImpl implements RestaurantService {
 
         nearbyRestaurants.sort(Comparator.comparingDouble(RestaurantDistance::getDistance));
         List<RestaurantDistance> limitedRestaurants = nearbyRestaurants.stream()
-                .limit(10)
+                .limit(10)   
                 .collect(Collectors.toList());
 
         List<Map<String, Object>> response = limitedRestaurants.stream()
@@ -282,11 +291,9 @@ public class RestaurantServiceImpl implements RestaurantService {
 
 
     @Override
+    @Cacheable(value = "restaurant_search", key = "#keyword")
     public ResponseEntity<CommonResponse> searchRestaurants(String keyword) {
         List<Restaurant> restaurants = restaurantRepository.searchRestaurantsByKeyword(keyword);
-        if (restaurants.isEmpty()) {
-            return ResponseEntity.ok(new CommonResponse(200, "No restaurants found", new ArrayList<>()));
-        }
         List<RestaurantResponse> responses = restaurants.stream()
                 .map(RestaurantResponse::convertToResponse)
                 .collect(Collectors.toList());

@@ -12,6 +12,8 @@ import cln.swiggy.restaurant.service.WishlistService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -37,8 +39,8 @@ public class WishlistServiceImpl implements WishlistService {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
-
     @Override
+    @CacheEvict(value = "wishlist", key = "#userId")
     public ResponseEntity<CommonResponse> addToWishlist(Long userId, WishlistRequest request) {
         Boolean isUserExists = (Boolean) rabbitTemplate.convertSendAndReceive(exchange, routingKey, userId);
         if (Boolean.FALSE.equals(isUserExists)) {
@@ -64,6 +66,7 @@ public class WishlistServiceImpl implements WishlistService {
     }
 
     @Override
+    @Cacheable(value = "wishlist", key = "#userId")
     public ResponseEntity<CommonResponse> getWishlistItems(Long userId) {
         Boolean isUserExists = (Boolean) rabbitTemplate.convertSendAndReceive(exchange, routingKey, userId);
         if (Boolean.FALSE.equals(isUserExists)) {
@@ -79,6 +82,7 @@ public class WishlistServiceImpl implements WishlistService {
     }
 
     @Override
+    @CacheEvict(value = "wishlist", key = "#userId")
     public ResponseEntity<CommonResponse> removeFromWishlist(Long userId, Long itemId) {
         Boolean isUserExists = (Boolean) rabbitTemplate.convertSendAndReceive(exchange, routingKey, userId);
         if (Boolean.FALSE.equals(isUserExists)) {
@@ -89,6 +93,7 @@ public class WishlistServiceImpl implements WishlistService {
                 .orElseThrow(() -> new ResourceNotFoundException("Wishlist item not found"));
 
         wishlistRepository.delete(wishlist);
+
         return ResponseEntity.ok(new CommonResponse(HttpStatus.OK.value(), "Item removed from wishlist successfully", null));
     }
 }

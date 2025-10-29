@@ -5,3 +5,10 @@ spring:
       - rabbitMQ
       - elastic
       - eureka
+      - redis
+
+#spring:
+#  profiles:
+#    active:
+#      - docker
+#

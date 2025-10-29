@@ -22,6 +22,10 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
+
 @Service
 public class BookingServiceImpl implements BookingService {
 
@@ -37,27 +41,20 @@ public class BookingServiceImpl implements BookingService {
     @Value("${rabbitmq.notification.restaurant.routing_Key}")
     private String notificationRoutingKey;
 
-    @Autowired
-    private BookingRepository bookingRepository;
-    @Autowired
-    private RestaurantRepository restaurantRepository;
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
-    @Autowired
-    private SNSService snsService;
+    @Autowired private BookingRepository bookingRepository;
+    @Autowired private RestaurantRepository restaurantRepository;
+    @Autowired private RabbitTemplate rabbitTemplate;
+    @Autowired private SNSService snsService;
 
-    @Override
-    public ResponseEntity<CommonResponse> bookTable(BookingRequest request) {
+    @Override public ResponseEntity<CommonResponse> bookTable(BookingRequest request) {
         Booking booking = new Booking();
         Restaurant restaurant = restaurantRepository.findById(request.getRestaurantId())
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
-
         Boolean isOwnerExists = (Boolean) rabbitTemplate.convertSendAndReceive(exchange, routingKey, request.getUserId());
 
-        if (Boolean.FALSE.equals(isOwnerExists))
-            throw new ResourceNotFoundException("Owner not found with id: " + request.getUserId());
-        booking.setUserId(request.getUserId());
+        if (Boolean.FALSE.equals(isOwnerExists)) throw new ResourceNotFoundException("Owner not found with id: " + request.getUserId());
 
+        booking.setUserId(request.getUserId());
         booking.setRestaurant(restaurant);
         booking.setNumberOfPeople(request.getNumberOfPeople());
         booking.setBookingDate(request.getBookingDate());
@@ -65,16 +62,13 @@ public class BookingServiceImpl implements BookingService {
         booking.setBookingStatus(BookingStatus.PENDING);
         booking.setOfferId(request.getOfferId());
         booking.setCreatedAt(LocalDateTime.now());
-
         Booking savedBooking = bookingRepository.save(booking);
-
         HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(restaurant.getId(), "RESTAURANT","TABLE_BOOK", LocalDateTime.now());
         rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
-
-        return ResponseEntity.ok(new CommonResponse(
-                HttpStatus.OK.value(), "Booking created successfully", savedBooking));
+        return ResponseEntity.ok(new CommonResponse( HttpStatus.OK.value(), "Booking created successfully", savedBooking));
     }
 
+    @Cacheable(value = "booking_by_id", key = "#bookingId")
     @Override
     public ResponseEntity<CommonResponse> getBookingDetails(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
@@ -84,6 +78,7 @@ public class BookingServiceImpl implements BookingService {
                 "Booking details retrieved successfully", booking));
     }
 
+    @Cacheable(value = "user_bookings", key = "#userId")
     @Override
     public ResponseEntity<CommonResponse> getAllBookingsForUser(Long userId) {
         List<Booking> bookings = bookingRepository.findByUserId(userId);
@@ -92,11 +87,14 @@ public class BookingServiceImpl implements BookingService {
                 "User bookings retrieved successfully", bookings));
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "booking_by_id", key = "#bookingId"),
+            @CacheEvict(value = "user_bookings", allEntries = true)
+    })
     @Override
     public ResponseEntity<CommonResponse> updateBooking(Long bookingId, BookingRequest request) {
         Booking existingBooking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
-
 
         existingBooking.setNumberOfPeople(request.getNumberOfPeople());
         existingBooking.setBookingDate(request.getBookingDate());
@@ -105,16 +103,20 @@ public class BookingServiceImpl implements BookingService {
 
         Booking updatedBooking = bookingRepository.save(existingBooking);
 
-        HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(existingBooking.getRestaurant().getId(), "RESTAURANT","BOOKING_UPDATE", LocalDateTime.now());
+        HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(
+                existingBooking.getRestaurant().getId(), "RESTAURANT", "BOOKING_UPDATE", LocalDateTime.now());
         rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
 
         return ResponseEntity.ok(new CommonResponse(HttpStatus.OK.value(),
                 "Booking updated successfully", updatedBooking));
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "booking_by_id", key = "#bookingId"),
+            @CacheEvict(value = "user_bookings", allEntries = true)
+    })
     @Override
-    public ResponseEntity<CommonResponse> cancelBooking(Long bookingId,String reason) {
-
+    public ResponseEntity<CommonResponse> cancelBooking(Long bookingId, String reason) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
 
@@ -122,7 +124,8 @@ public class BookingServiceImpl implements BookingService {
         booking.setCancellationReason(reason);
         bookingRepository.save(booking);
 
-        HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(booking.getRestaurant().getId(), "RESTAURANT","BOOKING_CANCEL", LocalDateTime.now());
+        HashMap<String, Object> notificationData = NotificationUtil.getNotificationData(
+                booking.getRestaurant().getId(), "RESTAURANT", "BOOKING_CANCEL", LocalDateTime.now());
         rabbitTemplate.convertAndSend(notificationExchange, notificationRoutingKey, notificationData);
 
         return ResponseEntity.ok(new CommonResponse(HttpStatus.OK.value(),
