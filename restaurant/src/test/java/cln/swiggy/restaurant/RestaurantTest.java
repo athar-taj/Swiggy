@@ -27,6 +27,7 @@ public class RestaurantTest {
     @InjectMocks
     private RestaurantServiceImpl restaurantService;
 
+
     @Test
     void testGetRestaurantCategories_withMock() throws Exception {
         // Arrange
