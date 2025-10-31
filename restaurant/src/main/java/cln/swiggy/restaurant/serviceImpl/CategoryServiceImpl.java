@@ -6,36 +6,27 @@ import cln.swiggy.restaurant.model.response.CommonResponse;
 import cln.swiggy.restaurant.repository.CategoryRepository;
 import cln.swiggy.restaurant.repository.OrdersCategoryRepository;
 import cln.swiggy.restaurant.repository.RestaurantRepository;
-import cln.swiggy.restaurant.search.repository.ElasticRepository;
 import cln.swiggy.restaurant.service.CategoryService;
-import com.aws.service.s3bucket.service.StorageService;
+//import com.aws.service.s3bucket.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
     @Autowired RestaurantRepository restaurantRepository;
     @Autowired CategoryRepository categoryRepository;
     @Autowired OrdersCategoryRepository ordersCategoryRepository;
-    @Autowired ElasticRepository elasticRepository;
 
     @Value("${swiggy.category.image.path}")
     private String categoryImagePath;
-    @Autowired
-    StorageService storageService;
+//    @Autowired
+//    StorageService storageService;
 
 
     @Override

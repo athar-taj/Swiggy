@@ -3,11 +3,11 @@ package cln.swiggy.restaurant;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @SpringBootApplication
 @EnableCaching
-@EnableElasticsearchRepositories(basePackages = "cln.swiggy.restaurant.search.repository")
+@EnableMongoRepositories(basePackages = "cln.swiggy.restaurant.migration.repo")
 public class RestaurantApplication {
 
 	public static void main(String[] args) {

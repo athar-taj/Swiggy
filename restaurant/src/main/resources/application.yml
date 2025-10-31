@@ -6,9 +6,4 @@ spring:
       - elastic
       - eureka
       - redis
-
-#spring:
-#  profiles:
-#    active:
-#      - docker
-#
+      - migration

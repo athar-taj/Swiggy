@@ -8,7 +8,7 @@ import cln.swiggy.restaurant.model.response.CommonResponse;
 import cln.swiggy.restaurant.repository.RestaurantMenuImageRepository;
 import cln.swiggy.restaurant.repository.RestaurantRepository;
 import cln.swiggy.restaurant.service.RestaurantMenuImageService;
-import com.aws.service.s3bucket.service.StorageService;
+//import com.aws.service.s3bucket.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -25,8 +25,8 @@ public class RestaurantMenuImageServiceImpl implements RestaurantMenuImageServic
     @Autowired
     private RestaurantRepository restaurantRepository;
 
-    @Autowired
-    private StorageService storageService;
+//    @Autowired
+//    private StorageService storageService;
 
     @Autowired
     private RestaurantMenuImageRepository menuImageRepository;
@@ -37,13 +37,13 @@ public class RestaurantMenuImageServiceImpl implements RestaurantMenuImageServic
         Restaurant restaurant = restaurantRepository.findById(request.getRestaurantId())
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
-        for (MultipartFile image : request.getImages()) {
-            RestaurantMenuImage menuImage = new RestaurantMenuImage();
-            String key = storageService.uploadFile(image);
-            menuImage.setImage(key);
-            menuImage.setRestaurant(restaurant);
-            menuImageRepository.save(menuImage);
-        }
+//        for (MultipartFile image : request.getImages()) {
+//            RestaurantMenuImage menuImage = new RestaurantMenuImage();
+//            String key = storageService.uploadFile(image);
+//            menuImage.setImage(key);
+//            menuImage.setRestaurant(restaurant);
+//            menuImageRepository.save(menuImage);
+//        }
 
         return ResponseEntity.ok(new CommonResponse(
                 200,
@@ -58,7 +58,7 @@ public class RestaurantMenuImageServiceImpl implements RestaurantMenuImageServic
         RestaurantMenuImage existingImage = menuImageRepository.findById(imageId)
                 .orElseThrow(() -> new ResourceNotFoundException("Menu image not found"));
 
-        existingImage.setImage(storageService.uploadFile(newImage));
+//        existingImage.setImage(storageService.uploadFile(newImage));
         RestaurantMenuImage updatedImage = menuImageRepository.save(existingImage);
 
         return ResponseEntity.ok(new CommonResponse(

@@ -41,21 +41,27 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Autowired  RedisService redisService;
 
     @Override
-    @Cacheable(value = "restaurants_all", key = "'all_restaurants'")
     public ResponseEntity<CommonResponse> getAllRestaurants() {
+        CommonResponse cachedResponse = redisService.get("restaurants_all", CommonResponse.class);
+        if (cachedResponse != null) {
+            return ResponseEntity.ok(cachedResponse);
+        }
         List<Restaurant> restaurants = restaurantRepository.findAll();
 
+        CommonResponse response;
         if (restaurants.isEmpty()) {
-            return ResponseEntity.ok(new CommonResponse(200, "No restaurants found", new ArrayList<>()));
+            response = new CommonResponse(200, "No restaurants found", new ArrayList<>());
+        } else {
+            List<RestaurantResponse> responses = restaurants.stream()
+                    .map(RestaurantResponse::convertToResponse)
+                    .collect(Collectors.toList());
+            response = new CommonResponse(200, "Restaurants retrieved successfully", responses);
         }
 
-        List<RestaurantResponse> responses = restaurants.stream()
-                .map(RestaurantResponse::convertToResponse)
-                .collect(Collectors.toList());
+        redisService.set("restaurants_all", response, 1800L);
 
-        return ResponseEntity.ok(new CommonResponse(200, "Restaurants retrieved successfully", responses));
+        return ResponseEntity.ok(response);
     }
-
 
     @Override
     @Cacheable(value = "restaurant_by_id", key = "#restaurantId")

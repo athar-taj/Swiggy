@@ -12,12 +12,13 @@ public class RestaurantImages {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
 
     @Column(nullable = false)
     private String image;
 
+    @Column(name = "is_logo_image")
     private boolean isLogoImage = false;
 }

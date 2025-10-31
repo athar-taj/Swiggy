@@ -10,7 +10,7 @@ import cln.swiggy.restaurant.repository.BookingRepository;
 import cln.swiggy.restaurant.repository.RestaurantRepository;
 import cln.swiggy.restaurant.service.BookingService;
 import cln.swiggy.restaurant.serviceImpl.otherImple.NotificationUtil;
-import com.aws.service.sns.service.SNSService;
+//import com.aws.service.sns.service.SNSService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,7 +44,7 @@ public class BookingServiceImpl implements BookingService {
     @Autowired private BookingRepository bookingRepository;
     @Autowired private RestaurantRepository restaurantRepository;
     @Autowired private RabbitTemplate rabbitTemplate;
-    @Autowired private SNSService snsService;
+//    @Autowired private SNSService snsService;
 
     @Override public ResponseEntity<CommonResponse> bookTable(BookingRequest request) {
         Booking booking = new Booking();

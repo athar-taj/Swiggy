@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,10 +13,12 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
+@Table(name = "menu")
 public class Menu {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @JsonIgnore
@@ -29,29 +30,38 @@ public class Menu {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @Column(nullable = false)
+    @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "description")
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "price", nullable = false)
     private double price;
 
+    @Column(name = "discount")
     private double discount;
 
-    private int TotalRating;
+    @Column(name = "total_rating")
+    private int totalRating;
 
+    @Column(name = "rating")
     private double rating;
 
+    @Column(name = "total_orders")
     private int totalOrders;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "menu_type")
     private MenuType menuType;
 
+    @Column(name = "is_available")
     private Boolean isAvailable = true;
 
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @JsonIgnore
@@ -65,5 +75,4 @@ public class Menu {
     @JsonIgnore
     @OneToMany(mappedBy = "menu")
     private List<MenuImage> images;
-
 }

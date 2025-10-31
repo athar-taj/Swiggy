@@ -10,24 +10,40 @@ import java.time.LocalTime;
 
 @Data
 @Entity
+@Table(name = "booking")
 public class Booking {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
-    @Column(nullable = false)
+
+    @Column(name = "user_id", nullable = false)
     private Long userId;
+
     @ManyToOne
-    @JoinColumn(name = "booking", nullable = false)
+    @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
-    @Column(nullable = false)
+
+    @Column(name = "number_of_people", nullable = false)
     private int numberOfPeople;
-    @Column(nullable = false)
+
+    @Column(name = "booking_date", nullable = false)
     private LocalDate bookingDate;
-    @Column(nullable = false)
+
+    @Column(name = "booking_time", nullable = false)
     private LocalTime bookingTime;
+
     @Enumerated(EnumType.STRING)
-    private BookingStatus bookingStatus = BookingStatus.PENDING ;
+    @Column(name = "booking_status")
+    private BookingStatus bookingStatus = BookingStatus.PENDING;
+
+    @Column(name = "cancellation_reason")
     private String cancellationReason;
-    private Long OfferId;
+
+    @Column(name = "offer_id")
+    private Long offerId;
+
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 }
