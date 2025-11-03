@@ -49,4 +49,5 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     List<Restaurant> searchRestaurantsByKeyword(@Param("keyword") String keyword);
 
     List<Restaurant> findByAvgDeliveryTimeLessThanEqual(LocalTime avgDeliveryTime);
+
 }

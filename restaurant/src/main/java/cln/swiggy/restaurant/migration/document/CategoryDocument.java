@@ -18,6 +18,8 @@ public class CategoryDocument {
     @Id
     private String id;
 
+    private Long mysqlId;
+
     private String name;
     private String description;
     private String image;

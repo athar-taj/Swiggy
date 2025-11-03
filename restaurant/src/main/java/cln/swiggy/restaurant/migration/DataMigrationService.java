@@ -14,10 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,19 +57,34 @@ public class DataMigrationService {
 
     @Transactional("postgresTransactionManager")
     public String migrateToPostgres() {
+        List<Long> existingIds = postgresRestaurantRepo.findAllIds();
         List<Restaurant> allRestaurants = mysqlRestaurantRepo.findAll();
-        postgresRestaurantRepo.saveAll(allRestaurants);
-        return "✅ Migrated " + allRestaurants.size() + " restaurants successfully.";
+
+        List<Restaurant> newRestaurants = allRestaurants.stream()
+                .filter(r -> !existingIds.contains(r.getId()))
+                .collect(Collectors.toList());
+
+        if (!newRestaurants.isEmpty()) {
+            postgresRestaurantRepo.saveAll(newRestaurants);
+        }
+
+        return "✅ Migrated " + newRestaurants.size() + " new restaurants successfully.";
     }
 
     public String migrateToMongo() {
         List<Restaurant> restaurants = mysqlRestaurantRepo.findAll();
 
-        List<RestaurantDocument> docs = restaurants.stream().map(r -> {
+        List<RestaurantDocument> newDocs = new ArrayList<>();
+
+        for (Restaurant r : restaurants) {
+            if (mongoRepo.existsByMysqlId(r.getId())) {
+                continue;
+            }
+
             RestaurantDocument doc = new RestaurantDocument();
             doc.setId(UUID.randomUUID().toString());
+            doc.setMysqlId(r.getId());
 
-            // === BASIC FIELDS ===
             doc.setName(r.getName());
             doc.setOwnerId(r.getOwnerId());
             doc.setDescription(r.getDescription());
@@ -80,18 +93,18 @@ public class DataMigrationService {
             doc.setLogo(r.getLogo());
             doc.setRestaurantType(r.getRestaurantType() != null ? r.getRestaurantType().name() : null);
             doc.setOpenDays(r.getOpenDays() != null ? r.getOpenDays() : Collections.emptyList());
-            doc.setIsAvailable(r.getIsAvailable() != null ? r.getIsAvailable() : false);
-            doc.setRating(r.getRating() != null ? r.getRating() : 0.0);
-            doc.setTotalRating(r.getTotalRating() != null ? r.getTotalRating() : 0);
-            doc.setCostForTwo(r.getCostForTwo() != null ? r.getCostForTwo() : 0.0);
+            doc.setIsAvailable(Boolean.TRUE.equals(r.getIsAvailable()));
+            doc.setRating(Optional.ofNullable(r.getRating()).orElse(0.0));
+            doc.setTotalRating(Optional.ofNullable(r.getTotalRating()).orElse(0));
+            doc.setCostForTwo(Optional.ofNullable(r.getCostForTwo()).orElse(0.0));
             doc.setCreatedAt(r.getCreatedAt());
             doc.setUpdatedAt(r.getUpdatedAt());
 
-            // === ADDRESS (Embedded) ===
             Address address = addressRepo.findByRestaurantId(r.getId());
             if (address != null) {
                 AddressDocument addressDoc = new AddressDocument();
                 addressDoc.setId(UUID.randomUUID().toString());
+                addressDoc.setMysqlId(address.getId());
                 addressDoc.setOutlet(address.getOutlet());
                 addressDoc.setLatitude(address.getLatitude());
                 addressDoc.setLongitude(address.getLongitude());
@@ -101,107 +114,96 @@ public class DataMigrationService {
                 addressDoc.setPincode(address.getPincode());
                 addressDoc.setCreatedAt(address.getCreatedAt());
                 addressDoc.setUpdatedAt(address.getUpdatedAt());
-                addressMongoRepository.save(addressDoc); // save embedded object
-                doc.setAddresses(Collections.singletonList(addressDoc));
-            } else {
-                doc.setAddresses(Collections.emptyList());
+                doc.setAddresses(List.of(addressDoc));
             }
 
-            // === CATEGORIES (Embedded) ===
             if (r.getCategories() != null && !r.getCategories().isEmpty()) {
-                List<CategoryDocument> categoryDocs = r.getCategories().stream().map(c -> {
-                    CategoryDocument cd = categoryMongoRepository.findByName(c.getName())
-                            .orElseGet(() -> {
-                                CategoryDocument newCat = new CategoryDocument();
-                                newCat.setId(UUID.randomUUID().toString());
-                                newCat.setName(c.getName());
-                                newCat.setDescription(c.getDescription());
-                                categoryMongoRepository.save(newCat);
-                                return newCat;
-                            });
-                    return cd;
-                }).collect(Collectors.toList());
+                List<CategoryDocument> categoryDocs = r.getCategories().stream().map(c ->
+                        categoryMongoRepository.findByMysqlId(c.getId())
+                                .orElseGet(() -> {
+                                    CategoryDocument newCat = new CategoryDocument();
+                                    newCat.setId(UUID.randomUUID().toString());
+                                    newCat.setMysqlId(c.getId());
+                                    newCat.setName(c.getName());
+                                    newCat.setDescription(c.getDescription());
+                                    return categoryMongoRepository.save(newCat);
+                                })
+                ).toList();
                 doc.setCategories(categoryDocs);
-            } else {
-                doc.setCategories(Collections.emptyList());
             }
 
-            // === OFFERS (Embedded) ===
-            if (r.getOffers() != null && !r.getOffers().isEmpty()) {
-                List<OfferDocument> offerDocs = r.getOffers().stream().map(o -> {
-                    OfferDocument od = new OfferDocument();
-                    od.setId(UUID.randomUUID().toString());
-                    od.setOfferName(o.getOfferName());
-                    od.setOfferDescription(o.getOfferDescription());
-                    od.setOfferDiscount(o.getOfferDiscount());
-                    od.setOfferType(o.getOfferType());
-                    od.setStartDate(o.getStartDate());
-                    od.setEndDate(o.getEndDate());
-                    od.setIsActive(o.getIsActive());
-                    offerMongoRepository.save(od);
-                    return od;
-                }).collect(Collectors.toList());
-                doc.setOffers(offerDocs);
-            } else {
-                doc.setOffers(Collections.emptyList());
-            }
-
-            // === IMAGES (Embedded) ===
-            if (r.getImages() != null && !r.getImages().isEmpty()) {
-                List<RestaurantImageDocument> imageDocs = r.getImages().stream().map(img -> {
-                    RestaurantImageDocument imgDoc = new RestaurantImageDocument();
-                    imgDoc.setId(UUID.randomUUID().toString());
-                    imgDoc.setImage(img.getImage());
-                    imgDoc.setLogoImage(img.isLogoImage());
-                    restaurantImageMongoRepository.save(imgDoc);
-                    return imgDoc;
-                }).collect(Collectors.toList());
-                doc.setImages(imageDocs);
-            } else {
-                doc.setImages(Collections.emptyList());
-            }
-
-            // === FACILITIES (Reference IDs) ===
             List<String> facilityIds = new ArrayList<>();
-            if (r.getFacilities() != null && !r.getFacilities().isEmpty()) {
+            if (r.getFacilities() != null) {
                 for (Facility f : r.getFacilities()) {
-                    FacilityDocument fd = new FacilityDocument();
-                    fd.setId(UUID.randomUUID().toString());
-                    fd.setFacilityName(f.getFacilityName());
-                    fd.setDescription(f.getDescription());
-                    facilityMongoRepository.save(fd);
+                    FacilityDocument fd = facilityMongoRepository.findByMysqlId(f.getId())
+                            .orElseGet(() -> {
+                                FacilityDocument newFd = new FacilityDocument();
+                                newFd.setId(UUID.randomUUID().toString());
+                                newFd.setMysqlId(f.getId());
+                                newFd.setFacilityName(f.getFacilityName());
+                                newFd.setDescription(f.getDescription());
+                                return facilityMongoRepository.save(newFd);
+                            });
                     facilityIds.add(fd.getId());
                 }
             }
             doc.setFacilityIds(facilityIds);
 
-            // === MENUS (Reference IDs) ===
             List<String> menuIds = new ArrayList<>();
-            if (r.getMenus() != null && !r.getMenus().isEmpty()) {
+            if (r.getMenus() != null) {
                 for (Menu m : r.getMenus()) {
-                    MenuDocument md = new MenuDocument();
-                    md.setId(UUID.randomUUID().toString());
-                    md.setName(m.getName());
-                    md.setDescription(m.getDescription());
-                    md.setPrice(m.getPrice());
-                    md.setDiscount(m.getDiscount());
-                    md.setTotalOrders(m.getTotalOrders());
-                    md.setRating(m.getRating());
-                    md.setMenuType(m.getMenuType());
-                    md.setIsAvailable(m.getIsAvailable());
-                    md.setCreatedAt(m.getCreatedAt());
-                    md.setUpdatedAt(m.getUpdatedAt());
-                    menuMongoRepository.save(md);
+                    MenuDocument md = menuMongoRepository.findByMysqlId(m.getId())
+                            .orElseGet(() -> {
+                                MenuDocument newMd = new MenuDocument();
+                                newMd.setId(UUID.randomUUID().toString());
+                                newMd.setMysqlId(m.getId());
+                                newMd.setName(m.getName());
+                                newMd.setDescription(m.getDescription());
+                                newMd.setPrice(m.getPrice());
+                                newMd.setDiscount(m.getDiscount());
+                                newMd.setRating(m.getRating());
+                                newMd.setIsAvailable(m.getIsAvailable());
+                                newMd.setCreatedAt(m.getCreatedAt());
+                                newMd.setUpdatedAt(m.getUpdatedAt());
+                                return menuMongoRepository.save(newMd);
+                            });
                     menuIds.add(md.getId());
                 }
             }
             doc.setMenuIds(menuIds);
 
-            return doc;
-        }).collect(Collectors.toList());
+            newDocs.add(doc);
+        }
 
-        mongoRepo.saveAll(docs);
-        return "✅ Migrated " + docs.size() + " restaurants with embedded documents and reference IDs safely.";
+        if (!newDocs.isEmpty()) {
+            mongoRepo.saveAll(newDocs);
+        }
+
+        rebuildRelations();
+
+        return "✅ Migrated " + newDocs.size() + " new restaurants safely to Mongo.";
     }
 
+    public void rebuildRelations() {
+        Map<Long, String> restaurantMap = mongoRepo.findAll().stream()
+                .collect(Collectors.toMap(RestaurantDocument::getMysqlId, RestaurantDocument::getId));
+
+        List<Menu> mysqlMenus = menuRepo.findAll();
+
+        Map<Long, MenuDocument> menuMap = menuMongoRepository.findAll().stream()
+                .collect(Collectors.toMap(MenuDocument::getMysqlId, Function.identity()));
+
+        for (Menu menu : mysqlMenus) {
+            Long restaurantMysqlId = menu.getRestaurant().getId();
+            String restaurantMongoId = restaurantMap.get(restaurantMysqlId);
+            if (restaurantMongoId != null) {
+                MenuDocument menuDoc = menuMap.get(menu.getId());
+                if (menuDoc != null) {
+                    menuDoc.setRestaurantId(restaurantMongoId);
+                    menuMongoRepository.save(menuDoc);
+                }
+            }
+        }
+        System.out.println("✅ Menu → Restaurant relations rebuilt successfully!");
+    }
 }

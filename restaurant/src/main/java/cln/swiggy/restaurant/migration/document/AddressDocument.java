@@ -17,6 +17,8 @@ public class AddressDocument {
     @Id
     private String id;
 
+    private Long mysqlId;
+
     private String outlet;
     private Double latitude;
     private Double longitude;

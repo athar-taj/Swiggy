@@ -14,6 +14,9 @@ import java.util.List;
 public class RestaurantDocument {
     @Id
     private String id;
+
+    private Long mysqlId;
+
     private String name;
     private Long ownerId;
     private String description;

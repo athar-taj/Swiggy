@@ -20,6 +20,8 @@ public class BookingDocument {
     @Id
     private String id;
 
+    private Long mysqlId;
+
     private Long userId;
     private int numberOfPeople;
     private LocalDate bookingDate;

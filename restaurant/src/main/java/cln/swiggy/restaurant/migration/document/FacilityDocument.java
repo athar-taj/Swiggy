@@ -16,6 +16,8 @@ public class FacilityDocument {
     @Id
     private String id;
 
+    private Long mysqlId;
+
     private String facilityName;
     private String description;
 

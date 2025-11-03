@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface CategoryMongoRepository extends MongoRepository<CategoryDocument,String> {
     Optional<CategoryDocument> findByName(String name);
+
+    Optional<CategoryDocument> findByMysqlId(Long id);
 }

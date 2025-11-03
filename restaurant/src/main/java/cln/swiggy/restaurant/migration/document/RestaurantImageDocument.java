@@ -16,6 +16,8 @@ public class RestaurantImageDocument {
     @Id
     private String id;
 
+    private Long mysqlId;
+
     @DBRef
     private RestaurantDocument restaurant;
 

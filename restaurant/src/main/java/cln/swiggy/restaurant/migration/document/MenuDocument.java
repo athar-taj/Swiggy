@@ -19,6 +19,8 @@ public class MenuDocument {
     @Id
     private String id;
 
+    private Long mysqlId;
+
     private String name;
     private String description;
     private double price;
@@ -44,5 +46,9 @@ public class MenuDocument {
 
     @DBRef
     private List<RestaurantMenuImageDocument> images;
+
+    public void setRestaurantId(String id) {
+
+    }
 }
 

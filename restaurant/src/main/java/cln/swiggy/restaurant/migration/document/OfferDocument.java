@@ -18,6 +18,8 @@ public class OfferDocument {
     @Id
     private String id;
 
+    private Long mysqlId;
+
     private String offerName;
     private String offerDescription;
     private Double offerDiscount;
