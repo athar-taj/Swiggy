@@ -1,4 +1,4 @@
-package cln.swiggy.restaurant;
+package cln.swiggy.restaurant.migration;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
